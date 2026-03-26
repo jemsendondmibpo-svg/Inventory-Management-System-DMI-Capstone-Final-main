@@ -13,7 +13,7 @@ Visual Studio Code
 
 Go to repository link on GitHub. 
 
-https://github.com/jemsendondmibpo-svg/Inventory-Management-System-DMI-Capstone-Final.git
+https://github.com/jemsendondmibpo-svg/Inventory-Management-System-DMI-Capstone-Final-main.git
 
 Open Command Prompt / Terminal on your computer.
 
@@ -21,7 +21,7 @@ Navigate to the folder where you want the project:
 
 Clone the repository:
 
-git clone https://github.com/jemsendondmibpo-svg/Inventory-Management-System-DMI-Capstone-Final.git
+git clone https://github.com/jemsendondmibpo-svg/Inventory-Management-System-DMI-Capstone-Final-main.git
 
 ✅ This downloads the project folder to your computer.
 
