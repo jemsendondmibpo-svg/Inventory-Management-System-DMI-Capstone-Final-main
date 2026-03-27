@@ -270,7 +270,7 @@ export default function Inventory() {
           minQuantity: minQty,
           price: Number(formData.price) || 0,
           stockStatus: stockStatus,
-          assetStatus: formData.assetStatus as "Available" | "Assigned" | "Under Maintenance",
+          assetStatus: formData.assetStatus as "Available" | "Assigned" | "Under Maintenance" | "Defective",
           condition: formData.condition,
           purchaseDate: formData.purchaseDate,
           location,
@@ -296,7 +296,7 @@ export default function Inventory() {
           minQuantity: minQty,
           price: Number(formData.price) || 0,
           stockStatus: stockStatus,
-          assetStatus: formData.assetStatus as "Available" | "Assigned" | "Under Maintenance",
+          assetStatus: formData.assetStatus as "Available" | "Assigned" | "Under Maintenance" | "Defective",
           condition: formData.condition,
           purchaseDate: formData.purchaseDate,
           location,
@@ -345,6 +345,8 @@ export default function Inventory() {
         return isDark ? "bg-sky-500/15 text-sky-300 border-sky-500/20" : "bg-blue-100 text-blue-700 border-blue-200";
       case "Under Maintenance":
         return isDark ? "bg-amber-500/15 text-amber-300 border-amber-500/20" : "bg-orange-100 text-orange-700 border-orange-200";
+      case "Defective":
+        return isDark ? "bg-rose-500/15 text-rose-300 border-rose-500/20" : "bg-rose-100 text-rose-700 border-rose-200";
       default:
         return isDark ? "bg-slate-800 text-slate-200 border-slate-700" : "bg-gray-100 text-gray-700 border-gray-200";
     }
@@ -516,6 +518,7 @@ export default function Inventory() {
                 <option value="Available">Available</option>
                 <option value="Assigned">Assigned</option>
                 <option value="Under Maintenance">Under Maintenance</option>
+                <option value="Defective">Defective</option>
               </select>
             </div>
             <div className="flex items-center gap-2">
@@ -1072,6 +1075,7 @@ export default function Inventory() {
                       <SelectItem value="Available">Available</SelectItem>
                       <SelectItem value="Assigned">Assigned</SelectItem>
                       <SelectItem value="Under Maintenance">Under Maintenance</SelectItem>
+                      <SelectItem value="Defective">Defective</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -16,6 +16,8 @@ import {
   Wrench,
   MapPinned,
   PackagePlus,
+  Boxes,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,6 +30,7 @@ import {
 } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
 import { useAssignments } from "../context/AssignmentsContext";
+import { useInventory } from "../context/InventoryContext";
 import FloorMapIT from "../components/FloorMapIT";
 import FloorMapHR from "../components/FloorMapHR";
 import { useAuth } from "../context/AuthContext";
@@ -40,12 +43,13 @@ export default function Assignments() {
   const { resolvedTheme } = useTheme();
   const { user } = useAuth();
   const { assignments, deleteAssignment } = useAssignments();
+  const { inventory } = useInventory();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewTarget, setViewTarget] = useState<typeof assignments[0] | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<typeof assignments[0] | null>(null);
-  const [activeTab, setActiveTab] = useState<"list" | "map">("list");
+  const [activeTab, setActiveTab] = useState<"list" | "available" | "map">("list");
   const [selectedDepartment, setSelectedDepartment] = useState<"IT Department" | "HR Department">("IT Department");
   const canEditAssignments = user ? canManageAssignments(user.role) : false;
   const isDark = resolvedTheme === "dark";
@@ -58,6 +62,8 @@ export default function Assignments() {
         return isDark ? "bg-sky-500/15 text-sky-300" : "bg-blue-100 text-blue-700";
       case "Under Maintenance":
         return isDark ? "bg-amber-500/15 text-amber-300" : "bg-amber-100 text-amber-700";
+      case "Defective":
+        return isDark ? "bg-rose-500/15 text-rose-300" : "bg-rose-100 text-rose-700";
       default:
         return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-100 text-slate-700";
     }
@@ -82,15 +88,65 @@ export default function Assignments() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleDelete = () => {
+  const assignableAssets = inventory
+    .map((asset) => {
+      const assignedCount = assignments.filter(
+        (assignment) =>
+          assignment.status === "Assigned" &&
+          (assignment.assetId === asset.id || assignment.assetSKU === asset.sku)
+      ).length;
+      const maintenanceCount = assignments.filter(
+        (assignment) =>
+          assignment.status === "Under Maintenance" &&
+          (assignment.assetId === asset.id || assignment.assetSKU === asset.sku)
+      ).length;
+      const totalQuantity = asset.quantity;
+      const remainingQuantity = Math.max(0, totalQuantity - assignedCount);
+
+      return {
+        ...asset,
+        assignedCount,
+        maintenanceCount,
+        totalQuantity,
+        remainingQuantity,
+      };
+    })
+    .filter((asset) => {
+      const q = search.toLowerCase();
+      const matchesSearch =
+      asset.assetName.toLowerCase().includes(q) ||
+        asset.sku.toLowerCase().includes(q) ||
+        asset.category.toLowerCase().includes(q) ||
+        asset.location.toLowerCase().includes(q);
+
+      return (
+        matchesSearch &&
+        asset.assetStatus === "Available" &&
+        asset.assignedCount < asset.totalQuantity
+      );
+    })
+    .sort((left, right) => left.remainingQuantity - right.remainingQuantity);
+
+  const assignableTotalPages = Math.max(1, Math.ceil(assignableAssets.length / ITEMS_PER_PAGE));
+  const paginatedAssignableAssets = assignableAssets.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleDelete = async () => {
     if (!canEditAssignments) {
       toast.error("You have view-only access to Assignments.");
       return;
     }
     if (!deleteTarget) return;
-    deleteAssignment(deleteTarget.assignmentId);
-    toast.success(`Assignment "${deleteTarget.assignmentId}" deleted.`);
-    setDeleteTarget(null);
+    try {
+      await deleteAssignment(deleteTarget.assignmentId);
+      setDeleteTarget(null);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to delete the assignment right now.";
+      toast.error(message);
+    }
   };
 
   const summaryCards = [
@@ -111,9 +167,9 @@ export default function Assignments() {
       iconClass: "text-emerald-600",
     },
     {
-      label: "Available",
-      value: assignments.filter((a) => a.status === "Available").length,
-      description: "Assets ready for assignment",
+      label: "Assignable",
+      value: assignableAssets.length,
+      description: "Assets that still have units available for assignment",
       icon: ShieldCheck,
       accent: "from-sky-100 via-white to-sky-50",
       iconClass: "text-sky-600",
@@ -126,14 +182,22 @@ export default function Assignments() {
       accent: "from-amber-100 via-white to-orange-50",
       iconClass: "text-amber-600",
     },
+    {
+      label: "Defective",
+      value: assignments.filter((a) => a.status === "Defective").length,
+      description: "Assets marked as defective in assignment tracking",
+      icon: Trash2,
+      accent: "from-rose-100 via-white to-rose-50",
+      iconClass: "text-rose-600",
+    },
   ];
 
-  const itAssignments = assignments.filter((a) => a.seatNumber != null);
+  const itAssignments = assignments.filter((a) => a.department === "IT Department");
   const hrAssignments = assignments.filter((a) => a.department === "HR Department");
 
   return (
     <div className="space-y-5 md:space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         {summaryCards.map((card) => {
           const Icon = card.icon;
 
@@ -171,6 +235,16 @@ export default function Assignments() {
           <List className="h-4 w-4" />
           <span className="hidden sm:inline">Assignment List</span>
           <span className="sm:hidden">List</span>
+        </button>
+        <button
+          onClick={() => { setActiveTab("available"); setCurrentPage(1); }}
+          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
+            activeTab === "available" ? "bg-[#B0BF00] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <Boxes className="h-4 w-4" />
+          <span className="hidden sm:inline">Assignable Assets</span>
+          <span className="sm:hidden">Assign</span>
         </button>
         <button
           onClick={() => setActiveTab("map")}
@@ -219,6 +293,7 @@ export default function Assignments() {
                   <option value="Assigned">Assigned</option>
                   <option value="Available">Available</option>
                   <option value="Under Maintenance">Under Maintenance</option>
+                  <option value="Defective">Defective</option>
                 </select>
 
                 {canEditAssignments && (
@@ -355,6 +430,163 @@ export default function Assignments() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "available" && (
+        <div className={`overflow-hidden rounded-[28px] border shadow-[0_24px_60px_rgba(15,23,42,0.08)] transition-all duration-300 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)] ${isDark ? "border-slate-700 bg-slate-900" : "border-[#B0BF00]/15 bg-white"}`}>
+          <div className={`border-b px-4 py-5 md:px-6 md:py-6 ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${isDark ? "border-slate-700 bg-slate-800 text-[#d8e56b]" : "border-[#B0BF00]/20 bg-slate-50 text-[#7f8f00]"}`}>
+                  <Boxes className="h-3.5 w-3.5" />
+                  Inventory Availability
+                </div>
+                <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
+                  Assignable Assets From Inventory
+                </h3>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm sm:w-72">
+                  <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search assignable assets..."
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                    className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none"
+                  />
+                </div>
+
+                {canEditAssignments && (
+                  <button
+                    onClick={() => navigate("/dashboard/add-assignment")}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#B0BF00] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(176,191,0,0.28)] transition-colors hover:bg-[#9aaa00]"
+                  >
+                    <PackagePlus className="h-4 w-4" />
+                    New Assignment
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className={`${isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-slate-50"} border-b`}>
+                  {["Asset", "Category", "Location", "Quantity", "Assigned", "Stock", "Actions"].map(
+                    (h, i) => (
+                      <th
+                        key={h}
+                        className={`px-5 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider ${
+                          i === 6 ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${isDark ? "divide-slate-700" : "divide-gray-100"}`}>
+                {paginatedAssignableAssets.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-sm text-gray-400 italic">
+                      No assignable inventory assets found.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedAssignableAssets.map((asset) => (
+                    <tr key={asset.id} className={`transition-colors ${isDark ? "hover:bg-slate-800" : "hover:bg-slate-50"}`}>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-[#B0BF00]/10">
+                            <Boxes className="h-3.5 w-3.5 text-[#B0BF00]" />
+                          </div>
+                          <div>
+                            <span className="block text-sm font-medium text-gray-800">{asset.assetName}</span>
+                            <span className="text-[10px] font-mono text-gray-400">{asset.sku}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-gray-600">{asset.category}</td>
+                      <td className="px-5 py-3.5 text-xs text-gray-600">{asset.location}</td>
+                      <td className="px-5 py-3.5">
+                        <span className="inline-flex rounded-full bg-[#B0BF00]/10 px-2.5 py-1 text-xs font-semibold text-[#7f8f00]">
+                          {asset.totalQuantity}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                          {asset.assignedCount}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-medium text-gray-600">
+                            Remaining: {asset.remainingQuantity}
+                          </span>
+                          <span className={`w-fit rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${getStatusStyle(asset.assetStatus)}`}>
+                            {asset.assetStatus}
+                          </span>
+                          {asset.maintenanceCount > 0 && (
+                            <span className="text-[10px] font-medium text-amber-700">
+                              Under Maintenance: {asset.maintenanceCount}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-end gap-2">
+                          {canEditAssignments ? (
+                            <button
+                              onClick={() =>
+                                navigate(`/dashboard/add-assignment?assetId=${encodeURIComponent(asset.id)}`)
+                              }
+                              className="inline-flex items-center gap-1 rounded-xl bg-[#B0BF00] px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#9aaa00]"
+                              title="Create assignment"
+                            >
+                              Assign
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400">View only</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={`flex items-center justify-between border-t px-6 py-3 ${isDark ? "border-slate-700 bg-slate-900" : "border-gray-200 bg-white"}`}>
+            <p className="text-xs font-medium text-[#B0BF00]">
+              Showing {paginatedAssignableAssets.length} of {assignableAssets.length} assignable assets
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-3 w-3" />
+                Previous
+              </button>
+              <span className="px-1 text-xs text-gray-500">{currentPage} / {assignableTotalPages}</span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(assignableTotalPages, p + 1))}
+                disabled={currentPage === assignableTotalPages}
                 className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Next

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 export interface Assignment {
   assignmentId: string;
+  assetId?: string;
   assetName: string;
   assetSKU: string;
   assetCategory: string;
@@ -12,7 +13,7 @@ export interface Assignment {
   workstation: string;
   seatNumber?: number | null;
   floor: string;
-  status: "Available" | "Assigned" | "Under Maintenance";
+  status: "Available" | "Assigned" | "Under Maintenance" | "Defective";
   dateAssigned: string;
 }
 
@@ -83,6 +84,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       if (data) {
         const mappedAssignments: Assignment[] = data.map((item: any) => ({
           assignmentId: item.assignment_id,
+          assetId: item.asset_id || undefined,
           assetName: item.assets?.asset_name || 'Unknown Asset',
           assetSKU: item.assets?.sku || '',
           assetCategory: item.assets?.asset_type || 'Extra',
@@ -91,7 +93,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
           workstation: item.workstation || 'N/A',
           seatNumber: item.seat_number,
           floor: item.floor || 'N/A',
-          status: item.status as "Available" | "Assigned" | "Under Maintenance",
+          status: item.status as "Available" | "Assigned" | "Under Maintenance" | "Defective",
           dateAssigned: item.date_assigned || '—',
         }));
 
@@ -105,24 +107,68 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const resolveAssetForAssignment = async (assetSKU: string) => {
+    const { data: asset, error } = await supabase
+      .from("assets")
+      .select("asset_id, quantity, sku, status")
+      .eq("sku", assetSKU)
+      .single();
+
+    if (error || !asset) {
+      throw error || new Error("Asset not found");
+    }
+
+    return asset;
+  };
+
+  const countAssignedUnits = (
+    assetId: string,
+    assetSKU: string,
+    excludedAssignmentId?: string
+  ) =>
+    assignments.filter(
+      (assignment) =>
+        assignment.assignmentId !== excludedAssignmentId &&
+        assignment.status === "Assigned" &&
+        (assignment.assetId === assetId || assignment.assetSKU === assetSKU)
+    ).length;
+
+  const ensureAssignableCapacity = async (
+    assetSKU: string,
+    excludedAssignmentId?: string
+  ) => {
+    const asset = await resolveAssetForAssignment(assetSKU);
+    const assignedCount = countAssignedUnits(asset.asset_id, assetSKU, excludedAssignmentId);
+    const totalQuantity = Number(asset.quantity || 0);
+
+    if (asset.status === "Defective") {
+      throw new Error("Defective assets cannot be assigned.");
+    }
+
+    if (asset.status === "Under Maintenance") {
+      throw new Error("Assets under maintenance cannot be assigned.");
+    }
+
+    if (assignedCount >= totalQuantity) {
+      throw new Error("All units of this asset are already assigned.");
+    }
+
+    return asset;
+  };
+
   const addAssignment = async (a: Assignment) => {
     try {
-      // First, get the asset_id from the SKU
-      const { data: assetData } = await supabase
-        .from('assets')
-        .select('asset_id')
-        .eq('sku', a.assetSKU)
-        .single();
+      const asset = await resolveAssetForAssignment(a.assetSKU);
 
-      if (!assetData) {
-        throw new Error('Asset not found');
+      if (a.status === "Assigned") {
+        await ensureAssignableCapacity(a.assetSKU);
       }
 
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('assignments')
         .insert([
           {
-            asset_id: assetData.asset_id,
+            asset_id: asset.asset_id,
             assigned_to_name: a.assignedTo,
             department: a.department,
             workstation: a.workstation,
@@ -137,12 +183,6 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
 
       if (insertError) throw insertError;
 
-      // Update asset status
-      await supabase
-        .from('assets')
-        .update({ status: a.status })
-        .eq('asset_id', assetData.asset_id);
-
       // Refresh assignments
       await fetchAssignments();
 
@@ -155,6 +195,18 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
 
   const updateAssignment = async (a: Assignment) => {
     try {
+      const existingAssignment = assignments.find((item) => item.assignmentId === a.assignmentId);
+
+      if (!existingAssignment) {
+        throw new Error("Unable to locate the existing assignment record.");
+      }
+
+      const targetAssetSku = a.assetSKU || existingAssignment.assetSKU;
+
+      if (a.status === "Assigned") {
+        await ensureAssignableCapacity(targetAssetSku, a.assignmentId);
+      }
+
       const { error: updateError } = await supabase
         .from('assignments')
         .update({

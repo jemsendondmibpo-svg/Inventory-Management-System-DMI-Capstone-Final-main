@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -32,7 +32,7 @@ const FLOOR_MAPPING: Record<string, string> = {
   "HR Department": "3rd Floor",
 };
 
-type AssignmentStatus = "Assigned" | "Available" | "Under Maintenance";
+type AssignmentStatus = "Assigned" | "Available" | "Under Maintenance" | "Defective";
 
 type FormData = {
   assetId: string;
@@ -55,9 +55,11 @@ const SEAT_NUMBERS: Record<string, number[]> = {
 export default function AddAssignment() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = !!id;
   const { addAssignment, updateAssignment, getAssignment, nextId, assignments } = useAssignments();
   const { inventory } = useInventory();
+  const selectedAssetIdFromQuery = searchParams.get("assetId");
 
   const existing = id ? getAssignment(id) : undefined;
 
@@ -65,11 +67,16 @@ export default function AddAssignment() {
     if (existing) {
       return inventory.find((a) => a.sku === existing.assetSKU) || null;
     }
+    if (selectedAssetIdFromQuery) {
+      return inventory.find((a) => String(a.id) === selectedAssetIdFromQuery) || null;
+    }
     return null;
   });
 
   const [formData, setFormData] = useState<FormData>({
-    assetId: existing ? String(inventory.find((a) => a.sku === existing.assetSKU)?.id ?? "") : "",
+    assetId: existing
+      ? String(inventory.find((a) => a.sku === existing.assetSKU)?.id ?? "")
+      : selectedAssetIdFromQuery ?? "",
     assignedTo: existing?.assignedTo === "Unassigned" ? "" : (existing?.assignedTo ?? ""),
     workstation: existing?.workstation ?? "",
     seatNumber: existing?.seatNumber ? String(existing.seatNumber) : "",
@@ -92,6 +99,19 @@ export default function AddAssignment() {
   }, [selectedAsset]);
 
   useEffect(() => {
+    if (isEditMode || !selectedAssetIdFromQuery) return;
+
+    const assetFromQuery = inventory.find((asset) => String(asset.id) === selectedAssetIdFromQuery);
+    if (!assetFromQuery) return;
+
+    setSelectedAsset(assetFromQuery);
+    setFormData((prev) => ({
+      ...prev,
+      assetId: String(assetFromQuery.id),
+    }));
+  }, [inventory, isEditMode, selectedAssetIdFromQuery]);
+
+  useEffect(() => {
     setFormData((prev) => ({ ...prev, seatNumber: "" }));
   }, [formData.workstation]);
 
@@ -101,7 +121,7 @@ export default function AddAssignment() {
     setFormData((prev) => ({ ...prev, assetId, workstation: "", seatNumber: "" }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedAsset) {
@@ -123,10 +143,15 @@ export default function AddAssignment() {
 
     if (seatNum && !isEditMode) {
       const conflict = assignments.find(
-        (a) => a.seatNumber === seatNum && a.assignmentId !== id
+        (a) =>
+          a.seatNumber === seatNum &&
+          a.workstation === formData.workstation &&
+          a.assignmentId !== id
       );
       if (conflict) {
-        toast.error(`Seat ${seatNum} is already assigned to ${conflict.assignmentId}.`);
+        toast.error(
+          `Seat ${seatNum} in ${formData.workstation} is already assigned to ${conflict.assignmentId}.`
+        );
         return;
       }
     }
@@ -145,15 +170,19 @@ export default function AddAssignment() {
       dateAssigned: formData.dateAssigned,
     };
 
-    if (isEditMode) {
-      updateAssignment(record);
-      toast.success("Assignment updated successfully!");
-    } else {
-      addAssignment(record);
-      toast.success("Assignment created successfully!");
-    }
+    try {
+      if (isEditMode) {
+        await updateAssignment(record);
+      } else {
+        await addAssignment(record);
+      }
 
-    navigate("/dashboard/assignments");
+      navigate("/dashboard/assignments");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to save the assignment right now.";
+      toast.error(message);
+    }
   };
 
   const fieldClass =
@@ -164,6 +193,24 @@ export default function AddAssignment() {
   const workstationOptions = selectedAsset ? WORKSTATION_OPTIONS[selectedAsset.location] || [] : [];
   const showSeatNumberField = Boolean(selectedAsset && formData.workstation);
   const isHRDept = selectedAsset?.location === "HR Department";
+  const assignableInventory = inventory
+    .map((asset) => {
+      const assignedCount = assignments.filter(
+        (assignment) =>
+          assignment.status === "Assigned" &&
+          (assignment.assetId === asset.id || assignment.assetSKU === asset.sku)
+      ).length;
+
+      return {
+        ...asset,
+        assignedCount,
+        remainingQuantity: Math.max(0, asset.quantity - assignedCount),
+      };
+    })
+    .filter(
+      (asset) =>
+        isEditMode || (asset.assetStatus === "Available" && asset.remainingQuantity > 0)
+    );
 
   return (
     <div className="max-w-5xl space-y-5">
@@ -205,19 +252,24 @@ export default function AddAssignment() {
           <div className="space-y-4 p-6">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-slate-600">Asset *</Label>
-              <Select value={formData.assetId} onValueChange={handleAssetSelect}>
-                <SelectTrigger className={selectClass}>
-                  <SelectValue placeholder="Select asset from inventory" />
-                </SelectTrigger>
-                <SelectContent>
-                  {inventory.map((asset) => (
+                <Select value={formData.assetId} onValueChange={handleAssetSelect}>
+                  <SelectTrigger className={selectClass}>
+                    <SelectValue placeholder="Select asset from inventory" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  {assignableInventory.map((asset) => (
                     <SelectItem key={asset.id} value={String(asset.id)}>
-                      {asset.assetName} ({asset.sku}) - {asset.location}
+                      {asset.assetName} ({asset.sku}) - {asset.location} - Remaining: {asset.remainingQuantity} / Qty: {asset.quantity}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  </SelectContent>
+                </Select>
+                {!isEditMode && (
+                  <p className="text-xs italic text-slate-500">
+                    Only assets with remaining assignable quantity are listed here.
+                  </p>
+                )}
+              </div>
 
             {selectedAsset && (
               <div className="rounded-3xl border border-sky-200 bg-sky-50/80 p-5">
@@ -348,6 +400,7 @@ export default function AddAssignment() {
                     <SelectItem value="Assigned">Assigned</SelectItem>
                     <SelectItem value="Available">Available</SelectItem>
                     <SelectItem value="Under Maintenance">Under Maintenance</SelectItem>
+                    <SelectItem value="Defective">Defective</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

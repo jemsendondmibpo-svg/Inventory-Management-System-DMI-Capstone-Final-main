@@ -12,7 +12,7 @@ export interface InventoryAsset {
   minQuantity: number;
   price: number;
   stockStatus: "In Stock" | "Low Stock" | "Out of Stock";
-  assetStatus: "Available" | "Assigned" | "Under Maintenance";
+  assetStatus: "Available" | "Assigned" | "Under Maintenance" | "Defective";
   brand: string;
   model: string;
   serialNumber: string;
@@ -98,7 +98,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             minQuantity: item.min_quantity || 0,
             price: item.price || 0,
             stockStatus: stockStatus,
-            assetStatus: item.status === "Available" ? "Available" : item.status === "Assigned" ? "Assigned" : "Under Maintenance",
+            assetStatus:
+              item.status === "Available"
+                ? "Available"
+                : item.status === "Assigned"
+                  ? "Assigned"
+                  : item.status === "Under Maintenance"
+                    ? "Under Maintenance"
+                    : "Defective",
             brand: item.brand || '',
             model: item.model || '',
             serialNumber: item.serial_number || '',
@@ -132,7 +139,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             brand: asset.brand,
             model: asset.model,
             serial_number: asset.serialNumber,
-            status: asset.assetStatus === "Available" ? "Available" : asset.assetStatus === "Assigned" ? "Assigned" : "Under Maintenance",
+            status: asset.assetStatus,
             condition: asset.condition,
             purchase_date: asset.purchaseDate,
             price: asset.price,
@@ -168,7 +175,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           brand: asset.brand,
           model: asset.model,
           serial_number: asset.serialNumber,
-          status: asset.assetStatus === "Available" ? "Available" : asset.assetStatus === "Assigned" ? "Assigned" : "Under Maintenance",
+          status: asset.assetStatus,
           condition: asset.condition,
           purchase_date: asset.purchaseDate,
           price: asset.price,

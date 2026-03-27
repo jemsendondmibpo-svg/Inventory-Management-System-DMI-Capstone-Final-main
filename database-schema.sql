@@ -105,7 +105,7 @@ create table if not exists public.assets (
   model text not null default '',
   serial_number text not null default '',
   status text not null default 'Available'
-    check (status in ('Available', 'Assigned', 'Under Maintenance')),
+    check (status in ('Available', 'Assigned', 'Under Maintenance', 'Defective')),
   condition text not null default 'Good'
     check (condition in ('Excellent', 'Good', 'Fair', 'Poor', 'Damaged')),
   purchase_date date null,
@@ -122,6 +122,13 @@ create index if not exists idx_assets_type on public.assets (asset_type);
 create index if not exists idx_assets_status on public.assets (status);
 create index if not exists idx_assets_condition on public.assets (condition);
 create index if not exists idx_assets_location on public.assets (location_code);
+
+alter table public.assets
+drop constraint if exists assets_status_check;
+
+alter table public.assets
+add constraint assets_status_check
+check (status in ('Available', 'Assigned', 'Under Maintenance', 'Defective'));
 
 drop trigger if exists trg_assets_updated_at on public.assets;
 create trigger trg_assets_updated_at
@@ -140,7 +147,7 @@ create table if not exists public.assignments (
   seat_number integer null,
   floor text not null,
   status text not null default 'Assigned'
-    check (status in ('Available', 'Assigned', 'Under Maintenance')),
+    check (status in ('Available', 'Assigned', 'Under Maintenance', 'Defective')),
   date_assigned timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -150,6 +157,13 @@ create index if not exists idx_assignments_asset_id on public.assignments (asset
 create index if not exists idx_assignments_status on public.assignments (status);
 create index if not exists idx_assignments_department on public.assignments (department);
 create index if not exists idx_assignments_date on public.assignments (date_assigned);
+
+alter table public.assignments
+drop constraint if exists assignments_status_check;
+
+alter table public.assignments
+add constraint assignments_status_check
+check (status in ('Available', 'Assigned', 'Under Maintenance', 'Defective'));
 
 drop trigger if exists trg_assignments_updated_at on public.assignments;
 create trigger trg_assignments_updated_at

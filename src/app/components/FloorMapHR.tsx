@@ -7,7 +7,7 @@ interface Props {
 }
 
 // ----- Status color logic -----
-type SeatStatus = "assigned" | "available" | "undermaintenance" | "unoccupied";
+type SeatStatus = "assigned" | "available" | "undermaintenance" | "defective" | "unoccupied";
 
 function getStatusFromAssignment(assignment: Assignment): SeatStatus {
   const s = assignment.status.toLowerCase();
@@ -15,6 +15,8 @@ function getStatusFromAssignment(assignment: Assignment): SeatStatus {
     ? "assigned"
     : s === "under maintenance"
     ? "undermaintenance"
+    : s === "defective"
+    ? "defective"
     : s === "available"
     ? "available"
     : "unoccupied";
@@ -24,6 +26,7 @@ const SEAT_COLORS: Record<SeatStatus, string> = {
   assigned:         "bg-[#22c55e] text-white border-[#16a34a] shadow-sm",
   available:        "bg-[#3b82f6] text-white border-[#2563eb] shadow-sm",
   undermaintenance: "bg-[#f59e0b] text-white border-[#d97706] shadow-sm",
+  defective:        "bg-[#e11d48] text-white border-[#be123c] shadow-sm",
   unoccupied:       "bg-white text-gray-300 border-dashed border-gray-300 hover:border-gray-400",
 };
 
@@ -67,6 +70,8 @@ function SeatCell({ assignment, displayNumber, onClick }: SeatCellProps) {
                 ? "bg-[#22c55e]"
                 : status === "undermaintenance"
                 ? "bg-[#f59e0b]"
+                : status === "defective"
+                ? "bg-[#e11d48]"
                 : status === "available"
                 ? "bg-[#3b82f6]"
                 : "bg-gray-500"
@@ -169,6 +174,7 @@ export default function FloorMapHR({ assignments, onSeatClick }: Props) {
           { label: "Assigned", cls: "bg-[#22c55e]", text: "text-white" },
           { label: "Available", cls: "bg-[#3b82f6]", text: "text-white" },
           { label: "Under Maintenance", cls: "bg-[#f59e0b]", text: "text-white" },
+          { label: "Defective", cls: "bg-[#e11d48]", text: "text-white" },
         ].map((l) => (
           <div key={l.label} className="flex items-center gap-1.5">
             <div className={`w-5 h-5 rounded text-[8px] flex items-center justify-center font-bold ${l.cls} ${l.text}`}>
