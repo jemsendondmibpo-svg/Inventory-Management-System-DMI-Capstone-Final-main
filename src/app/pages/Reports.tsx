@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 
-const COLORS = ["#B0BF00", "#1a1d27", "#94a3b8", "#64748b", "#C5D300", "#8BA000"];
+const COLORS = ["#B0BF00", "#2F6FED", "#F59E0B", "#E85D75", "#14B8A6", "#8B5CF6"];
 
 const CARD = "overflow-hidden rounded-[28px] border border-[#B0BF00]/15 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.08)] transition-all duration-300 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)]";
 
@@ -96,6 +96,15 @@ export default function Reports() {
     : { fontSize: "10px" };
   const chartTitleClass = isDark ? "text-slate-100" : "text-gray-800";
   const chartIconClass = isDark ? "text-slate-300 hover:text-slate-100" : "text-gray-400 hover:text-gray-600";
+  const stockChartColors = {
+    inStock: isDark ? "#D7E56B" : "#B0BF00",
+    lowStock: isDark ? "#F6BD60" : "#E49A2F",
+    outOfStock: isDark ? "#F07A8A" : "#D94B62",
+  };
+  const activityChartColors = {
+    acquired: isDark ? "#7CC6FE" : "#2F6FED",
+    assigned: isDark ? "#D7E56B" : "#8FA100",
+  };
 
   const reportInventory = inventory.filter((item) =>
     isDateWithinRange(item.purchaseDate || item.createdAt, reportStartDate, reportEndDate)
@@ -680,12 +689,12 @@ export default function Reports() {
     });
     
     const colors: Record<string, string> = {
-      "Excellent": "#B0BF00",
-      "Good": isDark ? "#5b8def" : "#1a1d27",
-      "Fair": "#94a3b8",
-      "Poor": "#ef4444",
-      "Damaged": "#dc2626",
-      "Unspecified": "#64748b",
+      "Excellent": isDark ? "#D7E56B" : "#B0BF00",
+      "Good": isDark ? "#7CC6FE" : "#2F6FED",
+      "Fair": isDark ? "#F6BD60" : "#E49A2F",
+      "Poor": isDark ? "#F07A8A" : "#D94B62",
+      "Damaged": isDark ? "#FB7185" : "#BE123C",
+      "Unspecified": isDark ? "#94A3B8" : "#64748B",
     };
     
     return Object.entries(conditions)
@@ -1256,9 +1265,9 @@ export default function Reports() {
                   contentStyle={chartTooltip}
                 />
                 <Legend wrapperStyle={{ ...chartLegend, paddingTop: "8px" }} />
-                <Bar dataKey="inStock" fill={isDark ? "#d7e25f" : "#B0BF00"} name="In Stock" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="lowStock" fill={isDark ? "#fbbf24" : "#f97316"} name="Low Stock" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="outOfStock" fill={isDark ? "#f87171" : "#ef4444"} name="Out of Stock" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="inStock" fill={stockChartColors.inStock} name="In Stock" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="lowStock" fill={stockChartColors.lowStock} name="Low Stock" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="outOfStock" fill={stockChartColors.outOfStock} name="Out of Stock" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -1344,7 +1353,7 @@ export default function Reports() {
                 contentStyle={chartTooltip}
                 formatter={(value: number) => `₱${value.toLocaleString()}`}
               />
-              <Bar dataKey="value" fill={isDark ? "#d7e25f" : "#B0BF00"} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="value" fill={isDark ? "#7CC6FE" : "#2F6FED"} radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -1364,8 +1373,8 @@ export default function Reports() {
               <YAxis tick={{ fontSize: 11, fill: chartAxis }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={chartTooltip} />
               <Legend wrapperStyle={{ ...chartLegend, fontSize: "11px" }} />
-              <Area type="monotone" dataKey="acquired" stroke={isDark ? "#d7e25f" : "#B0BF00"} fill={isDark ? "#d7e25f" : "#B0BF00"} fillOpacity={isDark ? 0.2 : 0.15} strokeWidth={2} name="Inventory Added" />
-              <Area type="monotone" dataKey="assigned" stroke={isDark ? "#60a5fa" : "#2563eb"} fill={isDark ? "#60a5fa" : "#2563eb"} fillOpacity={isDark ? 0.16 : 0.1} strokeWidth={2} name="Assignments" />
+              <Area type="monotone" dataKey="acquired" stroke={activityChartColors.acquired} fill={activityChartColors.acquired} fillOpacity={isDark ? 0.2 : 0.14} strokeWidth={2} name="Inventory Added" />
+              <Area type="monotone" dataKey="assigned" stroke={activityChartColors.assigned} fill={activityChartColors.assigned} fillOpacity={isDark ? 0.18 : 0.12} strokeWidth={2} name="Assignments" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
