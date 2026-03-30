@@ -631,8 +631,12 @@ export default function UserManagement() {
                         <span
                           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm ${
                             systemUser.is_blocked
-                              ? "border-red-200 bg-red-50 text-red-700"
-                              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              ? isDark
+                                ? "border-red-500/20 bg-red-500/15 text-red-300"
+                                : "border-red-200 bg-red-50 text-red-700"
+                              : isDark
+                                ? "border-emerald-500/20 bg-emerald-500/15 text-emerald-300"
+                                : "border-emerald-200 bg-emerald-50 text-emerald-700"
                           }`}
                         >
                           {systemUser.is_blocked ? (
@@ -652,14 +656,14 @@ export default function UserManagement() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => setViewTarget(systemUser)}
-                            className="rounded-xl p-2 text-slate-400 transition-all duration-200 hover:scale-110 hover:bg-blue-50 hover:text-blue-600"
+                            className={`rounded-xl p-2 transition-all duration-200 hover:scale-110 ${isDark ? "text-slate-500 hover:bg-blue-500/10 hover:text-blue-300" : "text-slate-400 hover:bg-blue-50 hover:text-blue-600"}`}
                             title="View"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleOpenEditModal(systemUser)}
-                            className="rounded-xl p-2 text-slate-400 transition-all duration-200 hover:scale-110 hover:bg-[#B0BF00]/10 hover:text-[#7f8f00]"
+                            className={`rounded-xl p-2 transition-all duration-200 hover:scale-110 ${isDark ? "text-slate-500 hover:bg-[#B0BF00]/15 hover:text-[#d8e56b]" : "text-slate-400 hover:bg-[#B0BF00]/10 hover:text-[#7f8f00]"}`}
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
@@ -669,8 +673,12 @@ export default function UserManagement() {
                             disabled={user?.id === systemUser.user_id}
                             className={`rounded-xl p-2 transition-all duration-200 hover:scale-110 disabled:cursor-not-allowed disabled:opacity-40 ${
                               systemUser.is_blocked
-                                ? "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
-                                : "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                                ? isDark
+                                  ? "text-slate-500 hover:text-emerald-300 hover:bg-emerald-500/10"
+                                  : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                : isDark
+                                  ? "text-slate-500 hover:text-amber-300 hover:bg-amber-500/10"
+                                  : "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
                             }`}
                             title={systemUser.is_blocked ? "Unblock" : "Block"}
                           >
@@ -682,7 +690,7 @@ export default function UserManagement() {
                           </button>
                           <button
                             onClick={() => setDeleteTarget(systemUser)}
-                            className="rounded-xl p-2 text-slate-400 transition-all duration-200 hover:scale-110 hover:bg-red-50 hover:text-red-600"
+                            className={`rounded-xl p-2 transition-all duration-200 hover:scale-110 ${isDark ? "text-slate-500 hover:bg-red-500/10 hover:text-red-300" : "text-slate-400 hover:bg-red-50 hover:text-red-600"}`}
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />

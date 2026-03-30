@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { Assignment } from "../context/AssignmentsContext";
 
 interface Props {
@@ -27,7 +28,7 @@ const SEAT_COLORS: Record<SeatStatus, string> = {
   available:        "bg-[#3b82f6] text-white border-[#2563eb] shadow-sm",
   undermaintenance: "bg-[#f59e0b] text-white border-[#d97706] shadow-sm",
   defective:        "bg-[#e11d48] text-white border-[#be123c] shadow-sm",
-  unoccupied:       "bg-white text-gray-300 border-dashed border-gray-300 hover:border-gray-400",
+  unoccupied:       "bg-slate-100 text-slate-400 border-dashed border-slate-300 hover:border-slate-400 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700 dark:hover:border-slate-600",
 };
 
 // Extract just the numeric part from "ASG-001" → "001"
@@ -39,10 +40,11 @@ const SEAT_COLORS: Record<SeatStatus, string> = {
 interface SeatCellProps {
   assignment: Assignment;
   displayNumber: number; // Changed: Now we pass the sequential number
+  isDark: boolean;
   onClick?: (asg: Assignment) => void;
 }
 
-function SeatCell({ assignment, displayNumber, onClick }: SeatCellProps) {
+function SeatCell({ assignment, displayNumber, isDark, onClick }: SeatCellProps) {
   const [hovered, setHovered] = useState(false);
   const status = getStatusFromAssignment(assignment);
   const colorClass = SEAT_COLORS[status];
@@ -62,15 +64,15 @@ function SeatCell({ assignment, displayNumber, onClick }: SeatCellProps) {
 
       {/* Tooltip */}
       {hovered && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 min-w-[180px] bg-gray-900 text-white rounded-lg px-3 py-2.5 shadow-xl pointer-events-none">
+        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 min-w-[180px] rounded-lg px-3 py-2.5 shadow-xl pointer-events-none ${isDark ? "bg-slate-800 text-slate-100" : "bg-gray-900 text-white"}`}>
           <p className="text-xs font-bold text-[#B0BF00] mb-1">{assignment.assignmentId}</p>
-          <p className="text-[11px] text-white">{assignment.assignedTo}</p>
-          <p className="text-[10px] text-gray-300 mt-1">{assignment.assetName}</p>
-          <p className="text-[10px] text-gray-400">{assignment.assetCategory}</p>
-          <div className="mt-2 pt-2 border-t border-gray-700">
-            <p className="text-[10px] text-gray-400">Workstation: {assignment.workstation}</p>
+          <p className={`text-[11px] ${isDark ? "text-slate-100" : "text-white"}`}>{assignment.assignedTo}</p>
+          <p className={`text-[10px] mt-1 ${isDark ? "text-slate-300" : "text-gray-300"}`}>{assignment.assetName}</p>
+          <p className={`text-[10px] ${isDark ? "text-slate-400" : "text-gray-400"}`}>{assignment.assetCategory}</p>
+          <div className={`mt-2 pt-2 border-t ${isDark ? "border-slate-700" : "border-gray-700"}`}>
+            <p className={`text-[10px] ${isDark ? "text-slate-400" : "text-gray-400"}`}>Workstation: {assignment.workstation}</p>
             {assignment.seatNumber && (
-              <p className="text-[10px] text-gray-400">Seat/PC #: {assignment.seatNumber}</p>
+              <p className={`text-[10px] ${isDark ? "text-slate-400" : "text-gray-400"}`}>Seat/PC #: {assignment.seatNumber}</p>
             )}
           </div>
           <span
@@ -89,7 +91,7 @@ function SeatCell({ assignment, displayNumber, onClick }: SeatCellProps) {
             {assignment.status}
           </span>
           {/* Tooltip arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900" />
+          <div className={`absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent ${isDark ? "border-t-slate-800" : "border-t-gray-900"}`} />
         </div>
       )}
     </div>
@@ -98,6 +100,8 @@ function SeatCell({ assignment, displayNumber, onClick }: SeatCellProps) {
 
 export default function FloorMapIT({ assignments, onSeatClick }: Props) {
   const [selectedInfo, setSelectedInfo] = useState<Assignment | null>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const handleClick = (asg: Assignment) => {
     setSelectedInfo(asg);
@@ -178,7 +182,7 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
     <div className="space-y-5">
       {/* Legend */}
       <div className="flex flex-wrap gap-4 items-center">
-        <span className="text-xs font-semibold text-gray-500">Legend:</span>
+        <span className={`text-xs font-semibold ${isDark ? "text-slate-400" : "text-gray-500"}`}>Legend:</span>
         {[
           { label: "Assigned", cls: "bg-[#22c55e]", text: "text-white" },
           { label: "Available", cls: "bg-[#3b82f6]", text: "text-white" },
@@ -189,46 +193,46 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
             <div className={`w-5 h-5 rounded text-[8px] flex items-center justify-center font-bold ${l.cls} ${l.text}`}>
               {l.label === "Assigned" ? "1" : ""}
             </div>
-            <span className="text-xs text-gray-500">{l.label}</span>
+            <span className={`text-xs ${isDark ? "text-slate-400" : "text-gray-500"}`}>{l.label}</span>
           </div>
         ))}
       </div>
 
       {/* Floor Plan Layout */}
-      <div className="bg-[#f4f6f8] border border-gray-200 rounded-xl p-5 overflow-x-auto">
+      <div className={`rounded-xl p-5 overflow-x-auto ${isDark ? "bg-slate-950 border border-slate-800" : "bg-[#f4f6f8] border border-gray-200"}`}>
         <div className="min-w-[800px] space-y-6">
           
           {/* Top Row: PROD 2 and PROD 1 */}
           <div className="grid grid-cols-2 gap-6">
             {/* PROD 2 */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className={`rounded-xl border p-4 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"}`}>
               <div className={`${WORKSTATION_AREAS["PROD 2"].color} text-white text-xs font-bold rounded-lg px-3 py-2 mb-3 text-center`}>
                 {WORKSTATION_AREAS["PROD 2"].label}
               </div>
               <div className="flex flex-wrap gap-2 min-h-[120px]">
                 {getWorkstationAssignments("PROD 2").map((item) => (
-                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} onClick={handleClick} />
+                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} isDark={isDark} onClick={handleClick} />
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-[10px] text-gray-400">
+              <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
+                <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                   {getWorkstationAssignments("PROD 2").length} assignments
                 </p>
               </div>
             </div>
 
             {/* PROD 1 */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className={`rounded-xl border p-4 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"}`}>
               <div className={`${WORKSTATION_AREAS["PROD 1"].color} text-white text-xs font-bold rounded-lg px-3 py-2 mb-3 text-center`}>
                 {WORKSTATION_AREAS["PROD 1"].label}
               </div>
               <div className="flex flex-wrap gap-2 min-h-[120px]">
                 {getWorkstationAssignments("PROD 1").map((item) => (
-                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} onClick={handleClick} />
+                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} isDark={isDark} onClick={handleClick} />
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-[10px] text-gray-400">
+              <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
+                <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                   {getWorkstationAssignments("PROD 1").length} assignments
                 </p>
               </div>
@@ -238,51 +242,51 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
           {/* Bottom Row: Conference Room, IT Room, Front Desk */}
           <div className="grid grid-cols-3 gap-6">
             {/* Conference Room */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className={`rounded-xl border p-4 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"}`}>
               <div className={`${WORKSTATION_AREAS["Conference Room"].color} text-white text-xs font-bold rounded-lg px-3 py-2 mb-3 text-center`}>
                 {WORKSTATION_AREAS["Conference Room"].label}
               </div>
               <div className="flex flex-wrap gap-2 min-h-[80px]">
                 {getWorkstationAssignments("Conference Room").map((item) => (
-                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} onClick={handleClick} />
+                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} isDark={isDark} onClick={handleClick} />
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-[10px] text-gray-400">
+              <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
+                <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                   {getWorkstationAssignments("Conference Room").length} assignments
                 </p>
               </div>
             </div>
 
             {/* IT Room */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className={`rounded-xl border p-4 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"}`}>
               <div className={`${WORKSTATION_AREAS["IT Room"].color} text-white text-xs font-bold rounded-lg px-3 py-2 mb-3 text-center`}>
                 {WORKSTATION_AREAS["IT Room"].label}
               </div>
               <div className="flex flex-wrap gap-2 min-h-[80px]">
                 {getWorkstationAssignments("IT Room").map((item) => (
-                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} onClick={handleClick} />
+                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} isDark={isDark} onClick={handleClick} />
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-[10px] text-gray-400">
+              <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
+                <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                   {getWorkstationAssignments("IT Room").length} assignments
                 </p>
               </div>
             </div>
 
             {/* Front Desk */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className={`rounded-xl border p-4 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-gray-200"}`}>
               <div className={`${WORKSTATION_AREAS["Front Desk"].color} text-white text-xs font-bold rounded-lg px-3 py-2 mb-3 text-center`}>
                 {WORKSTATION_AREAS["Front Desk"].label}
               </div>
               <div className="flex flex-wrap gap-2 min-h-[80px]">
                 {getWorkstationAssignments("Front Desk").map((item) => (
-                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} onClick={handleClick} />
+                  <SeatCell key={item.assignment.assignmentId} assignment={item.assignment} displayNumber={item.displayNumber} isDark={isDark} onClick={handleClick} />
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <p className="text-[10px] text-gray-400">
+              <div className={`mt-3 pt-3 border-t ${isDark ? "border-slate-700" : "border-gray-100"}`}>
+                <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                   {getWorkstationAssignments("Front Desk").length} assignments
                 </p>
               </div>
@@ -293,7 +297,7 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
 
       {/* Selected assignment detail panel */}
       {selectedInfo && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className={`rounded-xl p-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-200 ${isDark ? "bg-slate-900 border border-slate-700" : "bg-white border border-gray-200"}`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -305,10 +309,10 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
                   {getDisplayNumberForAssignment(selectedInfo)}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">
+                  <p className={`text-sm font-semibold ${isDark ? "text-slate-100" : "text-gray-800"}`}>
                     {selectedInfo.assignmentId} — {selectedInfo.workstation}
                   </p>
-                  <p className="text-[10px] text-gray-400">Seat Position #{selectedInfo.seatNumber}</p>
+                  <p className={`text-[10px] ${isDark ? "text-slate-500" : "text-gray-400"}`}>Seat Position #{selectedInfo.seatNumber}</p>
                 </div>
               </div>
 
@@ -324,15 +328,15 @@ export default function FloorMapIT({ assignments, onSeatClick }: Props) {
                   { label: "Date Assigned", value: selectedInfo.dateAssigned },
                 ].map((f) => (
                   <div key={f.label}>
-                    <p className="text-[10px] text-gray-400 mb-0.5">{f.label}</p>
-                    <p className="text-xs font-medium text-gray-700">{f.value}</p>
+                    <p className={`text-[10px] mb-0.5 ${isDark ? "text-slate-500" : "text-gray-400"}`}>{f.label}</p>
+                    <p className={`text-xs font-medium ${isDark ? "text-slate-200" : "text-gray-700"}`}>{f.value}</p>
                   </div>
                 ))}
               </div>
             </div>
             <button
               onClick={() => setSelectedInfo(null)}
-              className="text-gray-400 hover:text-gray-600 text-xl leading-none flex-shrink-0"
+              className={`text-xl leading-none flex-shrink-0 ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"}`}
             >
               ×
             </button>

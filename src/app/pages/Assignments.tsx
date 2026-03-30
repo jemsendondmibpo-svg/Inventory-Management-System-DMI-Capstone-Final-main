@@ -211,7 +211,7 @@ export default function Assignments() {
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                     {card.label}
                   </p>
-                  <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+                  <p className={`mt-3 text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                     {card.value}
                   </p>
                 </div>
@@ -219,7 +219,7 @@ export default function Assignments() {
                   <Icon className={`h-5 w-5 ${card.iconClass}`} />
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-6 text-slate-600">{card.description}</p>
+              <p className={`mt-4 text-sm leading-6 ${isDark ? "text-slate-400" : "text-slate-600"}`}>{card.description}</p>
             </div>
           );
         })}
@@ -229,7 +229,11 @@ export default function Assignments() {
         <button
           onClick={() => setActiveTab("list")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
-            activeTab === "list" ? "bg-[#B0BF00] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+            activeTab === "list"
+              ? "bg-[#B0BF00] text-white shadow-sm"
+              : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-slate-500 hover:text-slate-700"
           }`}
         >
           <List className="h-4 w-4" />
@@ -239,7 +243,11 @@ export default function Assignments() {
         <button
           onClick={() => { setActiveTab("available"); setCurrentPage(1); }}
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
-            activeTab === "available" ? "bg-[#B0BF00] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+            activeTab === "available"
+              ? "bg-[#B0BF00] text-white shadow-sm"
+              : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-slate-500 hover:text-slate-700"
           }`}
         >
           <Boxes className="h-4 w-4" />
@@ -249,7 +257,11 @@ export default function Assignments() {
         <button
           onClick={() => setActiveTab("map")}
           className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
-            activeTab === "map" ? "bg-[#B0BF00] text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+            activeTab === "map"
+              ? "bg-[#B0BF00] text-white shadow-sm"
+              : isDark
+                ? "text-slate-400 hover:text-slate-200"
+                : "text-slate-500 hover:text-slate-700"
           }`}
         >
           <Map className="h-4 w-4" />
@@ -267,27 +279,27 @@ export default function Assignments() {
                   <ClipboardList className="h-3.5 w-3.5" />
                   Assignments Module
                 </div>
-                <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
+                <h3 className={`mt-3 text-xl font-bold tracking-tight md:text-2xl ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                   Asset Assignments
                 </h3>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <div className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm sm:w-60">
-                  <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                <div className={`flex w-full items-center gap-2 rounded-2xl border px-3.5 py-2.5 shadow-sm sm:w-60 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+                  <Search className={`h-4 w-4 flex-shrink-0 ${isDark ? "text-slate-500" : "text-slate-400"}`} />
                   <input
                     type="text"
                     placeholder="Search assignments..."
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                    className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none"
+                    className={`w-full bg-transparent text-sm outline-none ${isDark ? "text-slate-100 placeholder:text-slate-500" : "text-slate-700 placeholder:text-slate-400"}`}
                   />
                 </div>
 
                 <select
                   value={filterStatus}
                   onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 outline-none focus:border-[#B0BF00] shadow-sm"
+                  className={`rounded-2xl border px-4 py-2.5 text-sm font-medium outline-none focus:border-[#B0BF00] shadow-sm ${isDark ? "border-slate-700 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-600"}`}
                 >
                   <option value="all">All Status</option>
                   <option value="Assigned">Assigned</option>
@@ -317,7 +329,7 @@ export default function Assignments() {
                     (h, i) => (
                       <th
                         key={h}
-                        className={`px-5 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider ${
+                        className={`px-5 py-3 text-[10px] font-semibold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-gray-400"} ${
                           i === 7 ? "text-right" : "text-left"
                         }`}
                       >
@@ -330,7 +342,7 @@ export default function Assignments() {
               <tbody className={`divide-y ${isDark ? "divide-slate-700" : "divide-gray-100"}`}>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-sm text-gray-400 italic">
+                    <td colSpan={8} className={`py-12 text-center text-sm italic ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                       No assignments found.
                     </td>
                   </tr>
@@ -338,7 +350,7 @@ export default function Assignments() {
                   paginated.map((assignment) => (
                     <tr key={assignment.assignmentId} className={`transition-colors ${isDark ? "hover:bg-slate-800" : "hover:bg-slate-50"}`}>
                       <td className="px-5 py-3.5">
-                        <span className="text-xs font-mono text-gray-400">{assignment.assignmentId}</span>
+                        <span className={`text-xs font-mono ${isDark ? "text-slate-500" : "text-gray-400"}`}>{assignment.assignmentId}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
@@ -346,22 +358,26 @@ export default function Assignments() {
                             <UserCheck className="h-3.5 w-3.5 text-[#B0BF00]" />
                           </div>
                           <div>
-                            <span className="block text-sm font-medium text-gray-800">{assignment.assetName}</span>
-                            <span className="text-[10px] font-mono text-gray-400">{assignment.assetSKU}</span>
+                            <span className={`block text-sm font-medium ${isDark ? "text-slate-100" : "text-gray-800"}`}>{assignment.assetName}</span>
+                            <span className={`text-[10px] font-mono ${isDark ? "text-slate-500" : "text-gray-400"}`}>{assignment.assetSKU}</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={`text-sm ${!assignment.assignedTo || assignment.assignedTo === "Unassigned" ? "italic text-gray-400" : "text-gray-700"}`}>
+                        <span className={`text-sm ${
+                          !assignment.assignedTo || assignment.assignedTo === "Unassigned"
+                            ? isDark ? "italic text-slate-500" : "italic text-gray-400"
+                            : isDark ? "text-slate-200" : "text-gray-700"
+                        }`}>
                           {assignment.assignedTo || "Unassigned"}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-xs text-gray-600">{assignment.department}</span>
+                        <span className={`text-xs ${isDark ? "text-slate-300" : "text-gray-600"}`}>{assignment.department}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         <div>
-                          <span className="text-xs text-gray-600">{assignment.workstation}</span>
+                          <span className={`text-xs ${isDark ? "text-slate-300" : "text-gray-600"}`}>{assignment.workstation}</span>
                           {assignment.seatNumber && (
                             <span className="ml-1.5 rounded bg-[#B0BF00]/10 px-1.5 py-0.5 text-[10px] font-mono text-[#8a9200]">
                               #{assignment.seatNumber}
@@ -370,7 +386,7 @@ export default function Assignments() {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-xs text-gray-500">{assignment.floor}</span>
+                        <span className={`text-xs ${isDark ? "text-slate-400" : "text-gray-500"}`}>{assignment.floor}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${getStatusStyle(assignment.status)}`}>
@@ -381,7 +397,7 @@ export default function Assignments() {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setViewTarget(assignment)}
-                            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-[#B0BF00]/10 hover:text-[#B0BF00]"
+                            className={`rounded-lg p-1.5 transition-colors hover:bg-[#B0BF00]/10 hover:text-[#B0BF00] ${isDark ? "text-slate-500" : "text-gray-400"}`}
                             title="View"
                           >
                             <Eye className="h-3.5 w-3.5" />
@@ -390,14 +406,14 @@ export default function Assignments() {
                             <>
                               <button
                                 onClick={() => navigate(`/dashboard/edit-assignment/${assignment.assignmentId}`)}
-                                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-500"
+                                className={`rounded-lg p-1.5 transition-colors hover:text-blue-500 ${isDark ? "text-slate-500 hover:bg-blue-500/10" : "text-gray-400 hover:bg-blue-50"}`}
                                 title="Edit"
                               >
                                 <Edit className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 onClick={() => setDeleteTarget(assignment)}
-                                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                                className={`rounded-lg p-1.5 transition-colors hover:text-red-500 ${isDark ? "text-slate-500 hover:bg-red-500/10" : "text-gray-400 hover:bg-red-50"}`}
                                 title="Delete"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -421,16 +437,16 @@ export default function Assignments() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 <ChevronLeft className="h-3 w-3" />
                 Previous
               </button>
-              <span className="px-1 text-xs text-gray-500">{currentPage} / {totalPages}</span>
+              <span className={`px-1 text-xs ${isDark ? "text-slate-400" : "text-gray-500"}`}>{currentPage} / {totalPages}</span>
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 Next
                 <ChevronRight className="h-3 w-3" />
@@ -449,20 +465,20 @@ export default function Assignments() {
                   <Boxes className="h-3.5 w-3.5" />
                   Inventory Availability
                 </div>
-                <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
+                <h3 className={`mt-3 text-xl font-bold tracking-tight md:text-2xl ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                   Assignable Assets From Inventory
                 </h3>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <div className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-sm sm:w-72">
-                  <Search className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                <div className={`flex w-full items-center gap-2 rounded-2xl border px-3.5 py-2.5 shadow-sm sm:w-72 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+                  <Search className={`h-4 w-4 flex-shrink-0 ${isDark ? "text-slate-500" : "text-slate-400"}`} />
                   <input
                     type="text"
                     placeholder="Search assignable assets..."
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                    className="w-full bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none"
+                    className={`w-full bg-transparent text-sm outline-none ${isDark ? "text-slate-100 placeholder:text-slate-500" : "text-slate-700 placeholder:text-slate-400"}`}
                   />
                 </div>
 
@@ -487,7 +503,7 @@ export default function Assignments() {
                     (h, i) => (
                       <th
                         key={h}
-                        className={`px-5 py-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider ${
+                        className={`px-5 py-3 text-[10px] font-semibold uppercase tracking-wider ${isDark ? "text-slate-500" : "text-gray-400"} ${
                           i === 6 ? "text-right" : "text-left"
                         }`}
                       >
@@ -500,7 +516,7 @@ export default function Assignments() {
               <tbody className={`divide-y ${isDark ? "divide-slate-700" : "divide-gray-100"}`}>
                 {paginatedAssignableAssets.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-sm text-gray-400 italic">
+                    <td colSpan={7} className={`py-12 text-center text-sm italic ${isDark ? "text-slate-500" : "text-gray-400"}`}>
                       No assignable inventory assets found.
                     </td>
                   </tr>
@@ -513,33 +529,33 @@ export default function Assignments() {
                             <Boxes className="h-3.5 w-3.5 text-[#B0BF00]" />
                           </div>
                           <div>
-                            <span className="block text-sm font-medium text-gray-800">{asset.assetName}</span>
-                            <span className="text-[10px] font-mono text-gray-400">{asset.sku}</span>
+                            <span className={`block text-sm font-medium ${isDark ? "text-slate-100" : "text-gray-800"}`}>{asset.assetName}</span>
+                            <span className={`text-[10px] font-mono ${isDark ? "text-slate-500" : "text-gray-400"}`}>{asset.sku}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-gray-600">{asset.category}</td>
-                      <td className="px-5 py-3.5 text-xs text-gray-600">{asset.location}</td>
+                      <td className={`px-5 py-3.5 text-xs ${isDark ? "text-slate-300" : "text-gray-600"}`}>{asset.category}</td>
+                      <td className={`px-5 py-3.5 text-xs ${isDark ? "text-slate-300" : "text-gray-600"}`}>{asset.location}</td>
                       <td className="px-5 py-3.5">
                         <span className="inline-flex rounded-full bg-[#B0BF00]/10 px-2.5 py-1 text-xs font-semibold text-[#7f8f00]">
                           {asset.totalQuantity}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700"}`}>
                           {asset.assignedCount}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs font-medium text-gray-600">
+                          <span className={`text-xs font-medium ${isDark ? "text-slate-300" : "text-gray-600"}`}>
                             Remaining: {asset.remainingQuantity}
                           </span>
                           <span className={`w-fit rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${getStatusStyle(asset.assetStatus)}`}>
                             {asset.assetStatus}
                           </span>
                           {asset.maintenanceCount > 0 && (
-                            <span className="text-[10px] font-medium text-amber-700">
+                            <span className={`text-[10px] font-medium ${isDark ? "text-amber-300" : "text-amber-700"}`}>
                               Under Maintenance: {asset.maintenanceCount}
                             </span>
                           )}
@@ -578,16 +594,16 @@ export default function Assignments() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 <ChevronLeft className="h-3 w-3" />
                 Previous
               </button>
-              <span className="px-1 text-xs text-gray-500">{currentPage} / {assignableTotalPages}</span>
+              <span className={`px-1 text-xs ${isDark ? "text-slate-400" : "text-gray-500"}`}>{currentPage} / {assignableTotalPages}</span>
               <button
                 onClick={() => setCurrentPage((p) => Math.min(assignableTotalPages, p + 1))}
                 disabled={currentPage === assignableTotalPages}
-                className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isDark ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
               >
                 Next
                 <ChevronRight className="h-3 w-3" />
@@ -605,7 +621,7 @@ export default function Assignments() {
                 <MapPinned className="h-3.5 w-3.5" />
                 Assignment Map
               </div>
-              <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900">
+              <h3 className={`mt-3 text-xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                 {selectedDepartment} Floor Map - {selectedDepartment === "IT Department" ? "2nd Floor" : "3rd Floor"}
               </h3>
             </div>
@@ -613,7 +629,7 @@ export default function Assignments() {
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value as "IT Department" | "HR Department")}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 outline-none focus:border-[#B0BF00] shadow-sm"
+                className={`rounded-2xl border px-4 py-2.5 text-sm font-medium outline-none focus:border-[#B0BF00] shadow-sm ${isDark ? "border-slate-700 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-600"}`}
               >
                 <option value="IT Department">IT Department</option>
                 <option value="HR Department">HR Department</option>
@@ -662,12 +678,12 @@ export default function Assignments() {
                 { label: "Date Assigned", value: viewTarget.dateAssigned },
               ].map((f) => (
                 <div key={f.label} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">{f.label}</span>
-                  <span className="font-medium text-gray-800">{f.value}</span>
+                  <span className={isDark ? "text-slate-400" : "text-gray-500"}>{f.label}</span>
+                  <span className={`font-medium ${isDark ? "text-slate-100" : "text-gray-800"}`}>{f.value}</span>
                 </div>
               ))}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Status</span>
+                <span className={isDark ? "text-slate-400" : "text-gray-500"}>Status</span>
                 <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${getStatusStyle(viewTarget.status)}`}>
                   {viewTarget.status}
                 </span>
@@ -698,8 +714,8 @@ export default function Assignments() {
           <DialogHeader>
             <DialogTitle>Delete Assignment</DialogTitle>
             <DialogDescription>
-              Delete assignment <span className="font-semibold text-gray-800">"{deleteTarget?.assignmentId}"</span> for{" "}
-              <span className="font-semibold text-gray-800">{deleteTarget?.assetName}</span>? This cannot be undone.
+              Delete assignment <span className={`font-semibold ${isDark ? "text-slate-100" : "text-gray-800"}`}>"{deleteTarget?.assignmentId}"</span> for{" "}
+              <span className={`font-semibold ${isDark ? "text-slate-100" : "text-gray-800"}`}>{deleteTarget?.assetName}</span>? This cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

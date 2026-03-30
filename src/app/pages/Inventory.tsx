@@ -38,14 +38,35 @@ import { useInventory, InventoryAsset } from "../context/InventoryContext";
 import { useAuth } from "../context/AuthContext";
 import { canManageInventory } from "../lib/access";
 
-const CATEGORY_STYLES: Record<string, string> = {
-  "System Unit": "bg-blue-100 text-blue-700",
-  Monitor: "bg-teal-100 text-teal-700",
-  Keyboard: "bg-purple-100 text-purple-700",
-  Mouse: "bg-green-100 text-green-700",
-  Headset: "bg-orange-100 text-orange-700",
-  Webcam: "bg-indigo-100 text-indigo-700",
-  Extra: "bg-gray-100 text-gray-600",
+const CATEGORY_STYLES: Record<string, { light: string; dark: string }> = {
+  "System Unit": {
+    light: "bg-blue-100 text-blue-700",
+    dark: "bg-blue-500/15 text-blue-300",
+  },
+  Monitor: {
+    light: "bg-teal-100 text-teal-700",
+    dark: "bg-teal-500/15 text-teal-300",
+  },
+  Keyboard: {
+    light: "bg-purple-100 text-purple-700",
+    dark: "bg-purple-500/15 text-purple-300",
+  },
+  Mouse: {
+    light: "bg-green-100 text-green-700",
+    dark: "bg-green-500/15 text-green-300",
+  },
+  Headset: {
+    light: "bg-orange-100 text-orange-700",
+    dark: "bg-orange-500/15 text-orange-300",
+  },
+  Webcam: {
+    light: "bg-indigo-100 text-indigo-700",
+    dark: "bg-indigo-500/15 text-indigo-300",
+  },
+  Extra: {
+    light: "bg-gray-100 text-gray-600",
+    dark: "bg-slate-700 text-slate-200",
+  },
 };
 
 const ITEMS_PER_PAGE = 8;
@@ -352,6 +373,14 @@ export default function Inventory() {
     }
   };
 
+  const getCategoryStyle = (category: string) => {
+    const style = CATEGORY_STYLES[category];
+    if (!style) {
+      return isDark ? "bg-slate-700 text-slate-200" : "bg-gray-100 text-gray-600";
+    }
+    return isDark ? style.dark : style.light;
+  };
+
   const categories = ["System Unit", "Monitor", "Keyboard", "Mouse", "Headset", "Webcam", "Extra"];
 
   const fieldClass =
@@ -627,7 +656,7 @@ export default function Inventory() {
                     <td className="px-4 py-3.5">
                       <span
                         className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
-                          CATEGORY_STYLES[asset.category] || "bg-gray-100 text-gray-600"
+                          getCategoryStyle(asset.category)
                         }`}
                       >
                         {asset.category}
@@ -675,7 +704,7 @@ export default function Inventory() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setViewTarget(asset)}
-                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          className={`rounded-lg p-1.5 transition-colors ${isDark ? "text-slate-500 hover:bg-blue-500/10 hover:text-blue-300" : "text-gray-400 hover:bg-blue-50 hover:text-blue-500"}`}
                           title="View"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -684,14 +713,14 @@ export default function Inventory() {
                           <>
                             <button
                               onClick={() => handleOpenEditModal(asset)}
-                              className="p-1.5 text-gray-400 hover:text-[#B0BF00] hover:bg-[#B0BF00]/10 rounded-lg transition-colors"
+                              className={`rounded-lg p-1.5 transition-colors ${isDark ? "text-slate-500 hover:bg-[#B0BF00]/15 hover:text-[#d8e56b]" : "text-gray-400 hover:bg-[#B0BF00]/10 hover:text-[#B0BF00]"}`}
                               title="Edit"
                             >
                               <Edit className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => setDeleteTarget(asset)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              className={`rounded-lg p-1.5 transition-colors ${isDark ? "text-slate-500 hover:bg-red-500/10 hover:text-red-300" : "text-gray-400 hover:bg-red-50 hover:text-red-500"}`}
                               title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -805,7 +834,7 @@ export default function Inventory() {
                   <p className="text-xs text-gray-500 font-medium mb-1">Category</p>
                   <span
                     className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
-                      CATEGORY_STYLES[viewTarget.category] || "bg-gray-100 text-gray-600"
+                      getCategoryStyle(viewTarget.category)
                     }`}
                   >
                     {viewTarget.category}

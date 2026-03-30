@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useTheme } from "next-themes";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -54,6 +55,7 @@ const SEAT_NUMBERS: Record<string, number[]> = {
 
 export default function AddAssignment() {
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const isEditMode = !!id;
@@ -62,6 +64,7 @@ export default function AddAssignment() {
   const selectedAssetIdFromQuery = searchParams.get("assetId");
 
   const existing = id ? getAssignment(id) : undefined;
+  const isDark = resolvedTheme === "dark";
 
   const [selectedAsset, setSelectedAsset] = useState<typeof inventory[0] | null>(() => {
     if (existing) {
@@ -272,10 +275,10 @@ export default function AddAssignment() {
               </div>
 
             {selectedAsset && (
-              <div className="rounded-3xl border border-sky-200 bg-sky-50/80 p-5">
+              <div className={`rounded-3xl border p-5 ${isDark ? "border-sky-500/20 bg-sky-500/10" : "border-sky-200 bg-sky-50/80"}`}>
                 <div className="mb-3 flex items-start gap-2">
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-sky-600" />
-                  <p className="text-sm font-medium text-sky-900">Asset details auto-filled from inventory</p>
+                  <AlertCircle className={`mt-0.5 h-4 w-4 flex-shrink-0 ${isDark ? "text-sky-300" : "text-sky-600"}`} />
+                  <p className={`text-sm font-medium ${isDark ? "text-sky-100" : "text-sky-900"}`}>Asset details auto-filled from inventory</p>
                 </div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
                   {[
@@ -288,9 +291,14 @@ export default function AddAssignment() {
                     { label: "Department (from Inventory)", value: selectedAsset.location },
                     { label: "Unit Price", value: `PHP ${selectedAsset.price.toLocaleString()}` },
                   ].map((f) => (
-                    <div key={f.label} className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-600">{f.label}</p>
-                      <p className={`text-sm text-sky-950 ${f.mono ? "font-mono" : ""} ${f.label.includes("Department") ? "font-semibold" : ""}`}>
+                    <div
+                      key={f.label}
+                      className={`rounded-2xl border p-3 shadow-sm ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"}`}
+                    >
+                      <p className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? "text-sky-300" : "text-sky-600"}`}>{f.label}</p>
+                      <p
+                        className={`text-sm ${isDark ? "text-slate-100" : "text-sky-950"} ${f.mono ? "font-mono" : ""} ${f.label.includes("Department") ? "font-semibold" : ""}`}
+                      >
                         {f.value}
                       </p>
                     </div>
