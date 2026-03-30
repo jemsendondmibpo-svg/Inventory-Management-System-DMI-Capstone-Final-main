@@ -257,7 +257,9 @@ export default function Inventory() {
       return;
     }
 
-    if (!formData.assetType || !formData.brand || !formData.model) {
+    const assetType = formData.assetType.trim();
+
+    if (!assetType || !formData.brand || !formData.model) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -283,7 +285,7 @@ export default function Inventory() {
         await updateAsset({
           ...editTarget,
           assetName: `${formData.brand} ${formData.model}`,
-          category: formData.assetType,
+          category: assetType,
           brand: formData.brand,
           model: formData.model,
           serialNumber: formData.serialNumber,
@@ -304,12 +306,12 @@ export default function Inventory() {
           return match ? parseInt(match[0]) : 0;
         }), 0) + 1;
         
-        const sku = generateSKU(formData.assetType, formData.brand, nextId);
+        const sku = generateSKU(assetType, formData.brand, nextId);
 
         await addAsset({
           assetName: `${formData.brand} ${formData.model}`,
           sku: sku,
-          category: formData.assetType,
+          category: assetType,
           brand: formData.brand,
           model: formData.model,
           serialNumber: formData.serialNumber,
@@ -381,7 +383,21 @@ export default function Inventory() {
     return isDark ? style.dark : style.light;
   };
 
-  const categories = ["System Unit", "Monitor", "Keyboard", "Mouse", "Headset", "Webcam", "Extra"];
+  const categories = Array.from(
+    new Set(
+      [
+        "System Unit",
+        "Monitor",
+        "Keyboard",
+        "Mouse",
+        "Headset",
+        "Webcam",
+        ...inventory
+          .map((asset) => asset.category?.trim())
+          .filter((category): category is string => Boolean(category && category !== "Extra")),
+      ],
+    ),
+  );
 
   const fieldClass =
     "h-11 rounded-xl border border-slate-200 bg-white text-sm shadow-sm transition focus:border-[#B0BF00] focus:ring-4 focus:ring-[#B0BF00]/10";
@@ -973,19 +989,22 @@ export default function Inventory() {
                 {/* Asset Type */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-slate-600">Asset Type *</Label>
-                  <Select
+                  <Input
+                    list="inventory-category-options"
+                    placeholder="Type or pick a category"
                     value={formData.assetType}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, assetType: value }))}
-                  >
-                    <SelectTrigger className={fieldClass}>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(e) => setFormData((prev) => ({ ...prev, assetType: e.target.value }))}
+                    required
+                    className={fieldClass}
+                  />
+                  <datalist id="inventory-category-options">
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs italic text-slate-500">
+                    You can type a new category or choose one from the suggestions.
+                  </p>
                 </div>
 
                 {/* Brand */}
