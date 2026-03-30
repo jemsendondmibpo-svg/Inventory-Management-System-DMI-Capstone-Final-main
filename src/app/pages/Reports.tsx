@@ -696,6 +696,7 @@ export default function Reports() {
         color: colors[name] || "#64748b",
       }));
   })();
+  const totalConditionItems = conditionData.reduce((sum, item) => sum + item.value, 0);
 
   // Inventory value by category with real data
   const inventoryValueByCategory = (() => {
@@ -1278,7 +1279,40 @@ export default function Reports() {
                       <Cell key={`condition-cell-${entry.name}-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={chartTooltip} />
+                  <Tooltip
+                    wrapperStyle={{ zIndex: 40, outline: "none" }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const item = payload[0]?.payload as { name: string; value: number; color: string };
+                      const percentage = totalConditionItems > 0
+                        ? Math.round((item.value / totalConditionItems) * 100)
+                        : 0;
+
+                      return (
+                        <div
+                          className={`min-w-[150px] rounded-xl border px-3 py-2.5 shadow-xl ${
+                            isDark
+                              ? "border-slate-700 bg-slate-900 text-slate-100"
+                              : "border-slate-200 bg-white text-slate-900"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <p className="text-xs font-semibold">{item.name}</p>
+                          </div>
+                          <p className={`mt-2 text-[11px] ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                            Quantity: <span className="font-semibold">{item.value}</span>
+                          </p>
+                          <p className={`text-[11px] ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                            Share: <span className="font-semibold">{percentage}%</span>
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="grid grid-cols-3 gap-x-4 gap-y-1.5 w-full mt-2">
