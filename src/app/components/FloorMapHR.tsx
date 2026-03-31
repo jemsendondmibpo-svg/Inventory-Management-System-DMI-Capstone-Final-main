@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { Assignment } from "../context/AssignmentsContext";
+import { useInventory } from "../context/InventoryContext";
 
 interface Props {
   assignments: Assignment[];
@@ -92,6 +93,7 @@ function SeatCell({ assignment, displayNumber, isDark, onClick }: SeatCellProps)
 export default function FloorMapHR({ assignments, onSeatClick }: Props) {
   const [selectedInfo, setSelectedInfo] = useState<Assignment | null>(null);
   const { resolvedTheme } = useTheme();
+  const { inventory } = useInventory();
   const isDark = resolvedTheme === "dark";
 
   const handleClick = (asg: Assignment) => {
@@ -168,6 +170,14 @@ export default function FloorMapHR({ assignments, onSeatClick }: Props) {
     }
     return 0;
   };
+
+  const selectedAsset = selectedInfo
+    ? inventory.find(
+        (asset) =>
+          (selectedInfo.assetId && asset.id === selectedInfo.assetId) ||
+          asset.sku === selectedInfo.assetSKU
+      )
+    : null;
 
   return (
     <div className="space-y-5">
@@ -313,6 +323,18 @@ export default function FloorMapHR({ assignments, onSeatClick }: Props) {
                   { label: "Assigned To", value: selectedInfo.assignedTo },
                   { label: "Asset", value: selectedInfo.assetName },
                   { label: "Category", value: selectedInfo.assetCategory },
+                  { label: "Asset SKU", value: selectedInfo.assetSKU || selectedAsset?.sku || "N/A" },
+                  { label: "Brand", value: selectedAsset?.brand || "N/A" },
+                  { label: "Model", value: selectedAsset?.model || "N/A" },
+                  { label: "Serial Number", value: selectedAsset?.serialNumber || "N/A" },
+                  { label: "Condition", value: selectedAsset?.condition || "N/A" },
+                  { label: "Asset Status", value: selectedAsset?.assetStatus || "N/A" },
+                  {
+                    label: "Location",
+                    value: selectedAsset
+                      ? `${selectedAsset.location}${selectedAsset.locationCode ? ` (${selectedAsset.locationCode})` : ""}`
+                      : "N/A",
+                  },
                   { label: "Department", value: selectedInfo.department },
                   { label: "Workstation", value: selectedInfo.workstation },
                   { label: "Floor", value: selectedInfo.floor },

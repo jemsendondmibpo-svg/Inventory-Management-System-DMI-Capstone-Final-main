@@ -23,6 +23,13 @@ import {
   Activity,
 } from "lucide-react";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import {
   BarChart,
   Bar,
   PieChart,
@@ -77,6 +84,7 @@ export default function Dashboard() {
   const { inventory, loading: inventoryLoading } = useInventory();
   const firstName = user?.name?.trim().split(/\s+/)[0] || "there";
   const [currentDateTime, setCurrentDateTime] = useState(() => new Date());
+  const [isActivityDialogOpen, setIsActivityDialogOpen] = useState(false);
   const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
@@ -191,77 +199,144 @@ export default function Dashboard() {
 
   const alerts = inventory.filter((i) => i.stockStatus !== "In Stock");
 
-  const recentActivity = (() => {
+  const allActivity = (() => {
     const activities: ActivityItem[] = [];
 
-    const recentAssignments = [...assignments]
-      .sort((a, b) => new Date(b.dateAssigned || 0).getTime() - new Date(a.dateAssigned || 0).getTime())
-      .slice(0, 5);
+    inventory.forEach((item) => {
+      const createdDate = toValidDate(item.createdAt, item.purchaseDate);
+      const updatedDate = toValidDate(item.updatedAt);
 
-    recentAssignments.forEach((assignment) => {
-      if (assignment.status === "Assigned") {
+      if (createdDate) {
         activities.push({
-          id: `assign-${assignment.assignmentId}`,
-          action: "New Assignment",
-          description: assignment.assetName,
-          assignedTo: assignment.assignedTo,
-          timestamp: formatTimestamp(assignment.dateAssigned),
-          icon: UserPlus,
-          iconBg: isDark ? "bg-emerald-500/15" : "bg-green-50",
-          iconColor: isDark ? "text-emerald-300" : "text-green-500",
-          date: new Date(assignment.dateAssigned || 0),
-        });
-      } else if (assignment.status === "Under Maintenance") {
-        activities.push({
-          id: `maint-${assignment.assignmentId}`,
-          action: "Maintenance Scheduled",
-          description: assignment.assetName,
-          assignedTo: assignment.assignedTo,
-          timestamp: formatTimestamp(assignment.dateAssigned),
-          icon: Wrench,
-          iconBg: isDark ? "bg-sky-500/15" : "bg-blue-50",
-          iconColor: isDark ? "text-sky-300" : "text-blue-500",
-          date: new Date(assignment.dateAssigned || 0),
+          id: `asset-created-${item.id}`,
+          action: "Asset Added",
+          description: item.assetName,
+          assignedTo: `${item.sku} | ${item.category}`,
+          timestamp: formatTimestamp(createdDate.toISOString()),
+          icon: Package,
+          iconBg: isDark ? "bg-lime-500/15" : "bg-lime-50",
+          iconColor: isDark ? "text-lime-300" : "text-lime-600",
+          date: createdDate,
         });
       }
-    });
 
-    const lowStockItems = inventory
-      .filter((item) => item.stockStatus === "Low Stock" || item.stockStatus === "Out of Stock")
-      .slice(0, 3);
-
-    lowStockItems.forEach((item) => {
-      activities.push({
-        id: `stock-${item.id}`,
-        action: item.stockStatus === "Out of Stock" ? "Stock Alert" : "Stock Updated",
-        description: item.assetName,
-        assignedTo: item.stockStatus === "Out of Stock" ? "Out of stock" : "Low stock alert",
-        timestamp: "Recently",
-        icon: item.stockStatus === "Out of Stock" ? XCircle : AlertTriangle,
-        iconBg:
-          item.stockStatus === "Out of Stock"
+      if (updatedDate && isMeaningfulUpdate(item.createdAt, item.updatedAt)) {
+        activities.push({
+          id: `asset-updated-${item.id}`,
+          action: item.stockStatus === "Out of Stock" ? "Asset Depleted" : "Asset Updated",
+          description: item.assetName,
+          assignedTo: `Qty ${item.quantity} | ${item.stockStatus}`,
+          timestamp: formatTimestamp(updatedDate.toISOString()),
+          icon: item.stockStatus === "Out of Stock" ? XCircle : Package,
+          iconBg: item.stockStatus === "Out of Stock"
             ? isDark
               ? "bg-red-500/15"
               : "bg-red-50"
             : isDark
-              ? "bg-amber-500/15"
-              : "bg-amber-50",
-        iconColor:
-          item.stockStatus === "Out of Stock"
+              ? "bg-slate-700"
+              : "bg-slate-100",
+          iconColor: item.stockStatus === "Out of Stock"
             ? isDark
               ? "text-red-300"
               : "text-red-500"
             : isDark
-              ? "text-amber-300"
-              : "text-amber-500",
-        date: new Date(),
-      });
+              ? "text-slate-200"
+              : "text-slate-600",
+          date: updatedDate,
+        });
+      }
+
+      if (item.stockStatus === "Low Stock" || item.stockStatus === "Out of Stock") {
+        const stockAlertDate = updatedDate || createdDate;
+        if (!stockAlertDate) return;
+
+        activities.push({
+          id: `stock-alert-${item.id}`,
+          action: item.stockStatus === "Out of Stock" ? "Out of Stock Alert" : "Low Stock Alert",
+          description: item.assetName,
+          assignedTo: `SKU ${item.sku} | Qty ${item.quantity}`,
+          timestamp: formatTimestamp(stockAlertDate.toISOString()),
+          icon: item.stockStatus === "Out of Stock" ? XCircle : AlertTriangle,
+          iconBg:
+            item.stockStatus === "Out of Stock"
+              ? isDark
+                ? "bg-red-500/15"
+                : "bg-red-50"
+              : isDark
+                ? "bg-amber-500/15"
+                : "bg-amber-50",
+          iconColor:
+            item.stockStatus === "Out of Stock"
+              ? isDark
+                ? "text-red-300"
+                : "text-red-500"
+              : isDark
+                ? "text-amber-300"
+                : "text-amber-500",
+          date: stockAlertDate,
+        });
+      }
     });
 
-    return activities
-      .sort((a, b) => b.date.getTime() - a.date.getTime())
-      .slice(0, 6);
+    assignments.forEach((assignment) => {
+      const createdDate = toValidDate(assignment.createdAt, assignment.dateAssigned);
+      const updatedDate = toValidDate(assignment.updatedAt);
+      const assignmentMeta = `${assignment.assignedTo} | ${assignment.department}`;
+
+      if (createdDate) {
+        activities.push({
+          id: `assignment-created-${assignment.assignmentId}`,
+          action:
+            assignment.status === "Under Maintenance"
+              ? "Maintenance Logged"
+              : assignment.status === "Defective"
+                ? "Defective Assignment Logged"
+                : "Assignment Logged",
+          description: assignment.assetName,
+          assignedTo: assignmentMeta,
+          timestamp: formatTimestamp(createdDate.toISOString()),
+          icon: assignment.status === "Under Maintenance" ? Wrench : UserPlus,
+          iconBg: assignment.status === "Under Maintenance"
+            ? isDark
+              ? "bg-sky-500/15"
+              : "bg-blue-50"
+            : isDark
+              ? "bg-emerald-500/15"
+              : "bg-green-50",
+          iconColor: assignment.status === "Under Maintenance"
+            ? isDark
+              ? "text-sky-300"
+              : "text-blue-500"
+            : isDark
+              ? "text-emerald-300"
+              : "text-green-500",
+          date: createdDate,
+        });
+      }
+
+      if (updatedDate && isMeaningfulUpdate(assignment.createdAt, assignment.updatedAt)) {
+        activities.push({
+          id: `assignment-updated-${assignment.assignmentId}`,
+          action:
+            assignment.status === "Under Maintenance"
+              ? "Maintenance Updated"
+              : assignment.status === "Defective"
+                ? "Defective Status Updated"
+                : "Assignment Updated",
+          description: assignment.assetName,
+          assignedTo: `${assignmentMeta} | ${assignment.workstation}`,
+          timestamp: formatTimestamp(updatedDate.toISOString()),
+          icon: assignment.status === "Under Maintenance" ? Wrench : UserPlus,
+          iconBg: isDark ? "bg-slate-700" : "bg-slate-100",
+          iconColor: isDark ? "text-slate-200" : "text-slate-600",
+          date: updatedDate,
+        });
+      }
+    });
+
+    return activities.sort((a, b) => b.date.getTime() - a.date.getTime());
   })();
+  const recentActivity = allActivity.slice(0, 6);
 
   function formatTimestamp(dateString?: string): string {
     if (!dateString) return "Recently";
@@ -274,11 +349,32 @@ export default function Dashboard() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
+    if (diffMins <= 1) return "Just now";
     if (diffMins < 60) return `${diffMins} mins ago`;
     if (diffHours < 24) return `${diffHours} hours ago`;
     if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     return date.toLocaleDateString();
+  }
+
+  function toValidDate(...values: Array<string | undefined>): Date | null {
+    for (const value of values) {
+      if (!value) continue;
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) {
+        return date;
+      }
+    }
+
+    return null;
+  }
+
+  function isMeaningfulUpdate(createdAt?: string, updatedAt?: string): boolean {
+    const createdDate = toValidDate(createdAt);
+    const updatedDate = toValidDate(updatedAt);
+
+    if (!createdDate || !updatedDate) return false;
+    return updatedDate.getTime() - createdDate.getTime() > 60000;
   }
 
   const totalCategoryUnits = donutData.reduce((sum, item) => sum + item.value, 0);
@@ -577,42 +673,93 @@ export default function Dashboard() {
       </div>
 
       <div className={`overflow-hidden rounded-[28px] border shadow-[0_24px_60px_rgba(15,23,42,0.08)] ${isDark ? "border-slate-700 bg-slate-900" : "border-[#B0BF00]/15 bg-white"}`}>
-          <div className={`border-b px-5 py-5 md:px-6 ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
+        <div className={`border-b px-5 py-5 md:px-6 ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Recent Activity</h3>
-              <p className="mt-1 text-sm text-slate-500">Latest assignment and stock-related updates from the system.</p>
+              <p className="mt-1 text-sm text-slate-500">Live activity from inventory and assignment records across the system.</p>
             </div>
-            <div className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs ${isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-500"}`}>
-              <Clock className="h-3.5 w-3.5" />
-              <span>Last 48 hours</span>
-            </div>
+            <button
+              onClick={() => setIsActivityDialogOpen(true)}
+              className="inline-flex items-center gap-1 rounded-full border border-[#B0BF00]/20 bg-[#B0BF00]/10 px-3 py-1.5 text-xs font-semibold text-[#8fa100] transition hover:bg-[#B0BF00]/15"
+            >
+              See All
+              <ArrowRight className="h-3 w-3" />
+            </button>
           </div>
         </div>
         <div className="space-y-3 p-5 md:p-6">
-          {recentActivity.map((activity) => {
-            const Icon = activity.icon;
-            return (
-              <div
-                key={activity.id}
-                className={`flex items-start gap-3 rounded-2xl border p-4 transition-all hover:border-[#B0BF00]/30 hover:shadow-sm ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}
-              >
-                <div className={`${activity.iconBg} ${activity.iconColor} rounded-xl p-2.5 flex-shrink-0`}>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-800">{activity.action}</p>
-                    <span className="flex-shrink-0 text-[11px] text-slate-400">{activity.timestamp}</span>
+          {recentActivity.length === 0 ? (
+            <div className="py-10 text-center">
+              <Clock className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+              <p className="text-sm text-slate-500">No activity has been recorded yet.</p>
+            </div>
+          ) : (
+            recentActivity.map((activity) => {
+              const Icon = activity.icon;
+              return (
+                <div
+                  key={activity.id}
+                  className={`flex items-start gap-3 rounded-2xl border p-4 transition-all hover:border-[#B0BF00]/30 hover:shadow-sm ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}
+                >
+                  <div className={`${activity.iconBg} ${activity.iconColor} rounded-xl p-2.5 flex-shrink-0`}>
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <p className="text-sm text-slate-700">{activity.description}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-500">{activity.assignedTo}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800">{activity.action}</p>
+                      <span className="flex-shrink-0 text-[11px] text-slate-400">{activity.timestamp}</span>
+                    </div>
+                    <p className="text-sm text-slate-700">{activity.description}</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500">{activity.assignedTo}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
+
+      <Dialog open={isActivityDialogOpen} onOpenChange={setIsActivityDialogOpen}>
+        <DialogContent className={`max-h-[85vh] overflow-hidden rounded-[28px] border p-0 sm:max-w-3xl ${isDark ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}>
+          <DialogHeader className={`border-b px-6 py-5 ${isDark ? "border-slate-700" : "border-slate-200"}`}>
+            <DialogTitle className="text-xl font-semibold text-slate-900">All Recent Activity</DialogTitle>
+            <DialogDescription className="text-sm text-slate-500">
+              Showing {allActivity.length} activity record{allActivity.length === 1 ? "" : "s"} from the current system data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 overflow-y-auto p-6">
+            {allActivity.length === 0 ? (
+              <div className="py-10 text-center">
+                <Clock className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+                <p className="text-sm text-slate-500">No activity has been recorded yet.</p>
+              </div>
+            ) : (
+              allActivity.map((activity) => {
+                const Icon = activity.icon;
+                return (
+                  <div
+                    key={`dialog-${activity.id}`}
+                    className={`flex items-start gap-3 rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}
+                  >
+                    <div className={`${activity.iconBg} ${activity.iconColor} rounded-xl p-2.5 flex-shrink-0`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-slate-800">{activity.action}</p>
+                        <span className="flex-shrink-0 text-[11px] text-slate-400">{activity.timestamp}</span>
+                      </div>
+                      <p className="text-sm text-slate-700">{activity.description}</p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">{activity.assignedTo}</p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

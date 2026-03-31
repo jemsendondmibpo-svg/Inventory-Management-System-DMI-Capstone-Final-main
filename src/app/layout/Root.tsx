@@ -420,20 +420,20 @@ export default function Root() {
             createPortal(
               <div
                 ref={profilePanelRef}
-                className="fixed w-72 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border-2 border-gray-100 overflow-hidden z-[9999] dark:bg-[#0d1a2b] dark:border-[#314865]"
+                className="fixed z-[9999] w-72 overflow-hidden rounded-2xl border-2 border-gray-100 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.14)] ring-1 ring-black/5 dark:border-[#4b6587] dark:bg-[#0b1728] dark:shadow-[0_28px_80px_rgba(0,0,0,0.5)] dark:ring-white/10"
                 style={{ top: `${profilePosition.top}px`, right: `${profilePosition.right}px` }}
               >
                 {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-[#B0BF00] to-[#8a9600] p-4">
+                <div className="bg-gradient-to-r from-[#B0BF00] to-[#8a9600] p-4 dark:from-[#d7e25f] dark:via-[#aabf2d] dark:to-[#7f9411]">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center text-white text-sm font-bold ring-2 ring-white/30">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white ring-2 ring-white/30 backdrop-blur-xl dark:bg-[#07111f]/18 dark:text-[#07111f] dark:ring-white/45">
                       {user ? getInitials(user.name) : "U"}
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-bold text-sm">
+                      <p className="text-sm font-bold text-white dark:text-[#07111f]">
                         {user?.name || "User"}
                       </p>
-                      <p className="text-white/80 text-xs">
+                      <p className="text-xs text-white/80 dark:text-[#07111f]/80">
                         View your profile
                       </p>
                     </div>
@@ -441,44 +441,44 @@ export default function Root() {
                 </div>
 
                 {/* Profile Details */}
-                <div className="p-4 space-y-3 border-b border-gray-100 dark:border-[#314865]">
+                <div className="space-y-3 border-b border-gray-100 p-4 dark:border-[#36506f] dark:bg-[#0f1d31]">
                   {/* Full Name */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0 dark:bg-[#132338]">
-                      <User className="w-4 h-4 text-blue-600" />
+                  <div className="flex items-start gap-3 rounded-xl dark:bg-[#13243a] dark:px-3 dark:py-2.5">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-500/15 dark:ring-1 dark:ring-blue-400/25">
+                      <User className="w-4 h-4 text-blue-600 dark:text-blue-300" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 font-medium dark:text-slate-400">Full Name</p>
-                      <p className="text-sm text-gray-900 font-semibold truncate dark:text-slate-100">
+                      <p className="text-xs font-medium text-gray-500 dark:text-slate-300">Full Name</p>
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                         {user?.name || "User"}
                       </p>
                     </div>
                   </div>
 
                   {/* Email */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0 dark:bg-[#132338]">
-                      <Mail className="w-4 h-4 text-purple-600" />
+                  <div className="flex items-start gap-3 rounded-xl dark:bg-[#13243a] dark:px-3 dark:py-2.5">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-purple-50 dark:bg-violet-500/15 dark:ring-1 dark:ring-violet-400/25">
+                      <Mail className="w-4 h-4 text-purple-600 dark:text-violet-300" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 font-medium dark:text-slate-400">Email Address</p>
-                      <p className="text-sm text-gray-900 font-semibold truncate dark:text-slate-100">
+                      <p className="text-xs font-medium text-gray-500 dark:text-slate-300">Email Address</p>
+                      <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                         {user?.email || "user@example.com"}
                       </p>
                     </div>
                   </div>
 
                   {/* Role */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0 dark:bg-[#132338]">
+                  <div className="flex items-start gap-3 rounded-xl dark:bg-[#13243a] dark:px-3 dark:py-2.5">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-50 dark:bg-emerald-500/15 dark:ring-1 dark:ring-emerald-400/25">
                       {(() => {
                         const RoleIcon = getRoleIcon(user?.role || "");
-                        return <RoleIcon className="w-4 h-4 text-green-600" />;
+                        return <RoleIcon className="w-4 h-4 text-green-600 dark:text-emerald-300" />;
                       })()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-500 font-medium dark:text-slate-400">Role</p>
-                      <p className="text-sm text-gray-900 font-semibold dark:text-slate-100">
+                      <p className="text-xs font-medium text-gray-500 dark:text-slate-300">Role</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
                         {user?.role || "User"}
                       </p>
                     </div>
@@ -486,17 +486,17 @@ export default function Root() {
                 </div>
 
                 {/* Actions */}
-                <div className="p-2">
+                <div className="p-2 dark:bg-[#0b1728]">
                   <Link
                     to="/dashboard/settings"
                     onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-200 group dark:text-slate-100 dark:hover:bg-[#132338]"
+                    className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 dark:text-slate-100 dark:hover:bg-[#13243a] dark:hover:ring-1 dark:hover:ring-[#36506f]"
                   >
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-[#B0BF00]/10 transition-colors dark:bg-[#132338] dark:group-hover:bg-[#B0BF00]/10">
-                      <Settings className="w-4 h-4 text-gray-600 group-hover:text-[#B0BF00] transition-colors" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 transition-colors group-hover:bg-[#B0BF00]/10 dark:bg-[#1a2f47] dark:group-hover:bg-[#223a57]">
+                      <Settings className="w-4 h-4 text-gray-600 transition-colors group-hover:text-[#B0BF00] dark:text-slate-200" />
                     </div>
                     <span className="flex-1">Settings</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-[#B0BF00] transition-colors dark:text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-gray-400 transition-colors group-hover:text-[#B0BF00] dark:text-slate-300" />
                   </Link>
                   
                   <button
@@ -504,9 +504,9 @@ export default function Root() {
                       setIsProfileOpen(false);
                       setIsLogoutDialogOpen(true);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group dark:text-red-300 dark:hover:bg-red-950/40"
+                    className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/12 dark:hover:ring-1 dark:hover:ring-red-400/20"
                   >
-                    <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center group-hover:bg-red-100 transition-colors dark:bg-red-950/40 dark:group-hover:bg-red-900/50">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 transition-colors group-hover:bg-red-100 dark:bg-red-500/12 dark:group-hover:bg-red-500/18">
                       <LogOut className="w-4 h-4 text-red-600 dark:text-red-300" />
                     </div>
                     <span className="flex-1 text-left">Logout</span>

@@ -15,6 +15,8 @@ export interface Assignment {
   floor: string;
   status: "Available" | "Assigned" | "Under Maintenance" | "Defective";
   dateAssigned: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AssignmentsContextType {
@@ -40,23 +42,21 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
 
     // Set up real-time subscription for assignments updates
     const channel = supabase
-      .channel('assignments-changes')
+      .channel("assignments-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'assignments',
+          event: "*",
+          schema: "public",
+          table: "assignments",
         },
         (payload) => {
-          console.log('Real-time assignment change detected:', payload);
-          // Refresh assignments when any change occurs
+          console.log("Real-time assignment change detected:", payload);
           fetchAssignments();
         }
       )
       .subscribe();
 
-    // Cleanup subscription on unmount
     return () => {
       supabase.removeChannel(channel);
     };
@@ -68,7 +68,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from('assignments')
+        .from("assignments")
         .select(`
           *,
           assets (
@@ -77,7 +77,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
             asset_type
           )
         `)
-        .order('date_assigned', { ascending: false });
+        .order("date_assigned", { ascending: false });
 
       if (fetchError) throw fetchError;
 
@@ -85,23 +85,25 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
         const mappedAssignments: Assignment[] = data.map((item: any) => ({
           assignmentId: item.assignment_id,
           assetId: item.asset_id || undefined,
-          assetName: item.assets?.asset_name || 'Unknown Asset',
-          assetSKU: item.assets?.sku || '',
-          assetCategory: item.assets?.asset_type || 'Extra',
-          assignedTo: item.assigned_to_name || 'Unassigned',
-          department: item.department || 'N/A',
-          workstation: item.workstation || 'N/A',
+          assetName: item.assets?.asset_name || "Unknown Asset",
+          assetSKU: item.assets?.sku || "",
+          assetCategory: item.assets?.asset_type || "Extra",
+          assignedTo: item.assigned_to_name || "Unassigned",
+          department: item.department || "N/A",
+          workstation: item.workstation || "N/A",
           seatNumber: item.seat_number,
-          floor: item.floor || 'N/A',
+          floor: item.floor || "N/A",
           status: item.status as "Available" | "Assigned" | "Under Maintenance" | "Defective",
-          dateAssigned: item.date_assigned || '—',
+          dateAssigned: item.date_assigned || "",
+          createdAt: item.created_at || "",
+          updatedAt: item.updated_at || "",
         }));
 
         setAssignments(mappedAssignments);
       }
     } catch (err) {
-      console.error('Error fetching assignments:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch assignments');
+      console.error("Error fetching assignments:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch assignments");
     } finally {
       setLoading(false);
     }
@@ -165,7 +167,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       }
 
       const { error: insertError } = await supabase
-        .from('assignments')
+        .from("assignments")
         .insert([
           {
             asset_id: asset.asset_id,
@@ -183,12 +185,11 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
 
       if (insertError) throw insertError;
 
-      // Refresh assignments
       await fetchAssignments();
 
-      toast.success('Assignment added successfully!');
+      toast.success("Assignment added successfully!");
     } catch (err) {
-      console.error('Error adding assignment:', err);
+      console.error("Error adding assignment:", err);
       throw err;
     }
   };
@@ -208,7 +209,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       }
 
       const { error: updateError } = await supabase
-        .from('assignments')
+        .from("assignments")
         .update({
           workstation: a.workstation,
           seat_number: a.seatNumber,
@@ -216,16 +217,15 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
           status: a.status,
           date_assigned: a.dateAssigned,
         })
-        .eq('assignment_id', a.assignmentId);
+        .eq("assignment_id", a.assignmentId);
 
       if (updateError) throw updateError;
 
-      // Refresh assignments
       await fetchAssignments();
 
-      toast.success('Assignment updated successfully!');
+      toast.success("Assignment updated successfully!");
     } catch (err) {
-      console.error('Error updating assignment:', err);
+      console.error("Error updating assignment:", err);
       throw err;
     }
   };
@@ -233,18 +233,17 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
   const deleteAssignment = async (id: string) => {
     try {
       const { error: deleteError } = await supabase
-        .from('assignments')
+        .from("assignments")
         .delete()
-        .eq('assignment_id', id);
+        .eq("assignment_id", id);
 
       if (deleteError) throw deleteError;
 
-      // Refresh assignments
       await fetchAssignments();
 
-      toast.success('Assignment deleted successfully!');
+      toast.success("Assignment deleted successfully!");
     } catch (err) {
-      console.error('Error deleting assignment:', err);
+      console.error("Error deleting assignment:", err);
       throw err;
     }
   };

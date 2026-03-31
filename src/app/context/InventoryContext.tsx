@@ -19,6 +19,7 @@ export interface InventoryAsset {
   condition: string;
   purchaseDate: string;
   createdAt?: string;
+  updatedAt?: string;
   location: string;
   locationCode: string;
 }
@@ -112,6 +113,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             condition: item.condition || '',
             purchaseDate: item.purchase_date || '',
             createdAt: item.created_at || '',
+            updatedAt: item.updated_at || '',
             location: item.location || '',
             locationCode: item.location_code || '',
           };

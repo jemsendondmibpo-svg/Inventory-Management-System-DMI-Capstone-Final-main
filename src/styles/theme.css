@@ -260,6 +260,239 @@
   opacity: 0.65;
 }
 
+button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  transition:
+    transform 180ms ease,
+    box-shadow 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
+  -webkit-tap-highlight-color: transparent;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+button:not(:disabled),
+[type="button"]:not(:disabled),
+[type="submit"]:not(:disabled),
+[type="reset"]:not(:disabled) {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button[class*="text-gray-400"],
+button[class*="text-gray-500"],
+button[class*="text-gray-600"],
+button[class*="text-slate-400"],
+button[class*="text-slate-500"],
+button[class*="text-slate-600"],
+[type="button"][class*="text-gray-400"],
+[type="button"][class*="text-gray-500"],
+[type="button"][class*="text-gray-600"],
+[type="button"][class*="text-slate-400"],
+[type="button"][class*="text-slate-500"],
+[type="button"][class*="text-slate-600"],
+[type="submit"][class*="text-gray-400"],
+[type="submit"][class*="text-gray-500"],
+[type="submit"][class*="text-gray-600"],
+[type="submit"][class*="text-slate-400"],
+[type="submit"][class*="text-slate-500"],
+[type="submit"][class*="text-slate-600"],
+[type="reset"][class*="text-gray-400"],
+[type="reset"][class*="text-gray-500"],
+[type="reset"][class*="text-gray-600"],
+[type="reset"][class*="text-slate-400"],
+[type="reset"][class*="text-slate-500"],
+[type="reset"][class*="text-slate-600"] {
+  color: #1f2937 !important;
+}
+
+button[class*="hover:text-gray-600"]:hover,
+button[class*="hover:text-gray-700"]:hover,
+button[class*="hover:text-slate-600"]:hover,
+button[class*="hover:text-slate-700"]:hover,
+[type="button"][class*="hover:text-gray-600"]:hover,
+[type="button"][class*="hover:text-gray-700"]:hover,
+[type="button"][class*="hover:text-slate-600"]:hover,
+[type="button"][class*="hover:text-slate-700"]:hover,
+[type="submit"][class*="hover:text-gray-600"]:hover,
+[type="submit"][class*="hover:text-gray-700"]:hover,
+[type="submit"][class*="hover:text-slate-600"]:hover,
+[type="submit"][class*="hover:text-slate-700"]:hover,
+[type="reset"][class*="hover:text-gray-600"]:hover,
+[type="reset"][class*="hover:text-gray-700"]:hover,
+[type="reset"][class*="hover:text-slate-600"]:hover,
+[type="reset"][class*="hover:text-slate-700"]:hover {
+  color: #0f172a !important;
+}
+
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="submit"]:focus-visible,
+[type="reset"]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ring) 28%, transparent),
+    0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+button:active:not(:disabled),
+[type="button"]:active:not(:disabled),
+[type="submit"]:active:not(:disabled),
+[type="reset"]:active:not(:disabled) {
+  transform: translateY(1px) scale(0.995);
+}
+
+button[class*="rounded-full"]:not(:disabled),
+button[class*="rounded-xl"]:not(:disabled),
+button[class*="rounded-2xl"]:not(:disabled),
+button[class*="rounded-3xl"]:not(:disabled),
+[type="button"][class*="rounded-full"]:not(:disabled),
+[type="button"][class*="rounded-xl"]:not(:disabled),
+[type="button"][class*="rounded-2xl"]:not(:disabled),
+[type="button"][class*="rounded-3xl"]:not(:disabled),
+[type="submit"][class*="rounded-full"]:not(:disabled),
+[type="submit"][class*="rounded-xl"]:not(:disabled),
+[type="submit"][class*="rounded-2xl"]:not(:disabled),
+[type="submit"][class*="rounded-3xl"]:not(:disabled),
+[type="reset"][class*="rounded-full"]:not(:disabled),
+[type="reset"][class*="rounded-xl"]:not(:disabled),
+[type="reset"][class*="rounded-2xl"]:not(:disabled),
+[type="reset"][class*="rounded-3xl"]:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+button[class*="rounded-full"]:not(:disabled):hover,
+button[class*="rounded-xl"]:not(:disabled):hover,
+button[class*="rounded-2xl"]:not(:disabled):hover,
+button[class*="rounded-3xl"]:not(:disabled):hover,
+[type="button"][class*="rounded-full"]:not(:disabled):hover,
+[type="button"][class*="rounded-xl"]:not(:disabled):hover,
+[type="button"][class*="rounded-2xl"]:not(:disabled):hover,
+[type="button"][class*="rounded-3xl"]:not(:disabled):hover,
+[type="submit"][class*="rounded-full"]:not(:disabled):hover,
+[type="submit"][class*="rounded-xl"]:not(:disabled):hover,
+[type="submit"][class*="rounded-2xl"]:not(:disabled):hover,
+[type="submit"][class*="rounded-3xl"]:not(:disabled):hover,
+[type="reset"][class*="rounded-full"]:not(:disabled):hover,
+[type="reset"][class*="rounded-xl"]:not(:disabled):hover,
+[type="reset"][class*="rounded-2xl"]:not(:disabled):hover,
+[type="reset"][class*="rounded-3xl"]:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 16px 30px rgba(15, 23, 42, 0.12);
+}
+
+.dark button:focus-visible,
+.dark [type="button"]:focus-visible,
+.dark [type="submit"]:focus-visible,
+.dark [type="reset"]:focus-visible {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ring) 36%, transparent),
+    0 16px 30px rgba(0, 0, 0, 0.24);
+}
+
+.dark button,
+.dark [type="button"],
+.dark [type="submit"],
+.dark [type="reset"] {
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.dark button[class*="text-gray-400"],
+.dark button[class*="text-gray-500"],
+.dark button[class*="text-gray-600"],
+.dark button[class*="text-slate-400"],
+.dark button[class*="text-slate-500"],
+.dark button[class*="text-slate-600"],
+.dark [type="button"][class*="text-gray-400"],
+.dark [type="button"][class*="text-gray-500"],
+.dark [type="button"][class*="text-gray-600"],
+.dark [type="button"][class*="text-slate-400"],
+.dark [type="button"][class*="text-slate-500"],
+.dark [type="button"][class*="text-slate-600"],
+.dark [type="submit"][class*="text-gray-400"],
+.dark [type="submit"][class*="text-gray-500"],
+.dark [type="submit"][class*="text-gray-600"],
+.dark [type="submit"][class*="text-slate-400"],
+.dark [type="submit"][class*="text-slate-500"],
+.dark [type="submit"][class*="text-slate-600"],
+.dark [type="reset"][class*="text-gray-400"],
+.dark [type="reset"][class*="text-gray-500"],
+.dark [type="reset"][class*="text-gray-600"],
+.dark [type="reset"][class*="text-slate-400"],
+.dark [type="reset"][class*="text-slate-500"],
+.dark [type="reset"][class*="text-slate-600"] {
+  color: #f8fafc !important;
+}
+
+.dark button[class*="hover:text-gray-600"]:hover,
+.dark button[class*="hover:text-gray-700"]:hover,
+.dark button[class*="hover:text-slate-600"]:hover,
+.dark button[class*="hover:text-slate-700"]:hover,
+.dark [type="button"][class*="hover:text-gray-600"]:hover,
+.dark [type="button"][class*="hover:text-gray-700"]:hover,
+.dark [type="button"][class*="hover:text-slate-600"]:hover,
+.dark [type="button"][class*="hover:text-slate-700"]:hover,
+.dark [type="submit"][class*="hover:text-gray-600"]:hover,
+.dark [type="submit"][class*="hover:text-gray-700"]:hover,
+.dark [type="submit"][class*="hover:text-slate-600"]:hover,
+.dark [type="submit"][class*="hover:text-slate-700"]:hover,
+.dark [type="reset"][class*="hover:text-gray-600"]:hover,
+.dark [type="reset"][class*="hover:text-gray-700"]:hover,
+.dark [type="reset"][class*="hover:text-slate-600"]:hover,
+.dark [type="reset"][class*="hover:text-slate-700"]:hover {
+  color: #ffffff !important;
+}
+
+.dark button[class*="rounded-full"]:not(:disabled),
+.dark button[class*="rounded-xl"]:not(:disabled),
+.dark button[class*="rounded-2xl"]:not(:disabled),
+.dark button[class*="rounded-3xl"]:not(:disabled),
+.dark [type="button"][class*="rounded-full"]:not(:disabled),
+.dark [type="button"][class*="rounded-xl"]:not(:disabled),
+.dark [type="button"][class*="rounded-2xl"]:not(:disabled),
+.dark [type="button"][class*="rounded-3xl"]:not(:disabled),
+.dark [type="submit"][class*="rounded-full"]:not(:disabled),
+.dark [type="submit"][class*="rounded-xl"]:not(:disabled),
+.dark [type="submit"][class*="rounded-2xl"]:not(:disabled),
+.dark [type="submit"][class*="rounded-3xl"]:not(:disabled),
+.dark [type="reset"][class*="rounded-full"]:not(:disabled),
+.dark [type="reset"][class*="rounded-xl"]:not(:disabled),
+.dark [type="reset"][class*="rounded-2xl"]:not(:disabled),
+.dark [type="reset"][class*="rounded-3xl"]:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 26px rgba(0, 0, 0, 0.22);
+}
+
+.dark button[class*="rounded-full"]:not(:disabled):hover,
+.dark button[class*="rounded-xl"]:not(:disabled):hover,
+.dark button[class*="rounded-2xl"]:not(:disabled):hover,
+.dark button[class*="rounded-3xl"]:not(:disabled):hover,
+.dark [type="button"][class*="rounded-full"]:not(:disabled):hover,
+.dark [type="button"][class*="rounded-xl"]:not(:disabled):hover,
+.dark [type="button"][class*="rounded-2xl"]:not(:disabled):hover,
+.dark [type="button"][class*="rounded-3xl"]:not(:disabled):hover,
+.dark [type="submit"][class*="rounded-full"]:not(:disabled):hover,
+.dark [type="submit"][class*="rounded-xl"]:not(:disabled):hover,
+.dark [type="submit"][class*="rounded-2xl"]:not(:disabled):hover,
+.dark [type="submit"][class*="rounded-3xl"]:not(:disabled):hover,
+.dark [type="reset"][class*="rounded-full"]:not(:disabled):hover,
+.dark [type="reset"][class*="rounded-xl"]:not(:disabled):hover,
+.dark [type="reset"][class*="rounded-2xl"]:not(:disabled):hover,
+.dark [type="reset"][class*="rounded-3xl"]:not(:disabled):hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 18px 34px rgba(0, 0, 0, 0.28);
+}
+
 .dark [class*="shadow-[0_"] {
   box-shadow: 0 18px 45px rgba(2, 8, 23, 0.45) !important;
 }
