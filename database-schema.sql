@@ -368,6 +368,7 @@ using (
 
 drop policy if exists "users_insert_own_or_admin" on public.users;
 create policy "users_insert_own_or_admin"
+
 on public.users
 for insert
 to authenticated
