@@ -203,6 +203,7 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       }
 
       const targetAssetSku = a.assetSKU || existingAssignment.assetSKU;
+      const targetAsset = await resolveAssetForAssignment(targetAssetSku);
 
       if (a.status === "Assigned") {
         await ensureAssignableCapacity(targetAssetSku, a.assignmentId);
@@ -211,6 +212,9 @@ export function AssignmentsProvider({ children }: { children: ReactNode }) {
       const { error: updateError } = await supabase
         .from("assignments")
         .update({
+          asset_id: targetAsset.asset_id,
+          assigned_to_name: a.assignedTo,
+          department: a.department,
           workstation: a.workstation,
           seat_number: a.seatNumber,
           floor: a.floor,

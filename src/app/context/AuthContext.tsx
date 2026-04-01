@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
 
-export type UserRole = "Admin" | "IT Officers" | "HR Officers";
+export type UserRole = "Admin" | "IT Officers" | "HR Officers" | "User";
 export type LoginFailureReason =
   | "invalid_credentials"
   | "blocked"
@@ -231,7 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               auth_id: authData.user.id,
               email,
               full_name: name,
-              role: 'user',
+              role: 'User',
             },
           ])
           .select()

@@ -53,6 +53,17 @@ const SEAT_NUMBERS: Record<string, number[]> = {
   "Front Desk": [103],
 };
 
+const normalizeDateForInput = (value?: string) => {
+  if (!value) return new Date().toISOString().split("T")[0];
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value.includes("T") ? value.split("T")[0] : value;
+  }
+  return parsed.toISOString().split("T")[0];
+};
+
+const getFloorForDepartment = (department?: string) => FLOOR_MAPPING[department ?? ""] || "";
+
 export default function AddAssignment() {
   const navigate = useNavigate();
   const { resolvedTheme } = useTheme();
@@ -85,21 +96,8 @@ export default function AddAssignment() {
     seatNumber: existing?.seatNumber ? String(existing.seatNumber) : "",
     floor: existing?.floor ?? "",
     status: existing?.status ?? "Assigned",
-    dateAssigned: existing?.dateAssigned ?? new Date().toISOString().split("T")[0],
+    dateAssigned: normalizeDateForInput(existing?.dateAssigned),
   });
-
-  useEffect(() => {
-    if (selectedAsset) {
-      const department = selectedAsset.location;
-      const defaultFloor = FLOOR_MAPPING[department] || "";
-      setFormData((prev) => ({
-        ...prev,
-        floor: defaultFloor,
-        workstation: prev.workstation || "",
-        seatNumber: "",
-      }));
-    }
-  }, [selectedAsset]);
 
   useEffect(() => {
     if (isEditMode || !selectedAssetIdFromQuery) return;
@@ -111,17 +109,43 @@ export default function AddAssignment() {
     setFormData((prev) => ({
       ...prev,
       assetId: String(assetFromQuery.id),
+      floor: getFloorForDepartment(assetFromQuery.location),
     }));
   }, [inventory, isEditMode, selectedAssetIdFromQuery]);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, seatNumber: "" }));
-  }, [formData.workstation]);
+    if (!existing || !inventory.length) return;
+
+    const matchedAsset = inventory.find((asset) => asset.id === existing.assetId || asset.sku === existing.assetSKU);
+    if (!matchedAsset) return;
+
+    setSelectedAsset(matchedAsset);
+    setFormData((prev) => ({
+      ...prev,
+      assetId: matchedAsset.id,
+      assignedTo: existing.assignedTo === "Unassigned" ? "" : existing.assignedTo,
+      workstation: existing.workstation ?? "",
+      seatNumber: existing.seatNumber ? String(existing.seatNumber) : "",
+      floor: existing.floor || getFloorForDepartment(matchedAsset.location),
+      status: existing.status,
+      dateAssigned: normalizeDateForInput(existing.dateAssigned),
+    }));
+  }, [existing, inventory]);
 
   const handleAssetSelect = (assetId: string) => {
     const asset = inventory.find((a) => String(a.id) === assetId);
     setSelectedAsset(asset || null);
-    setFormData((prev) => ({ ...prev, assetId, workstation: "", seatNumber: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      assetId,
+      workstation: "",
+      seatNumber: "",
+      floor: asset ? getFloorForDepartment(asset.location) : prev.floor,
+    }));
+  };
+
+  const handleWorkstationChange = (workstation: string) => {
+    setFormData((prev) => ({ ...prev, workstation, seatNumber: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,7 +168,7 @@ export default function AddAssignment() {
       return;
     }
 
-    if (seatNum && !isEditMode) {
+    if (seatNum) {
       const conflict = assignments.find(
         (a) =>
           a.seatNumber === seatNum &&
@@ -345,7 +369,7 @@ export default function AddAssignment() {
 
               <div className="space-y-1.5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                 <Label className="text-xs font-medium text-slate-600">Workstation *</Label>
-                <Select value={formData.workstation} onValueChange={(v) => setFormData({ ...formData, workstation: v, seatNumber: "" })}>
+                <Select value={formData.workstation} onValueChange={handleWorkstationChange}>
                   <SelectTrigger className={selectClass}>
                     <SelectValue placeholder="Select workstation" />
                   </SelectTrigger>

@@ -15,6 +15,9 @@ import {
   Info,
   Sparkles,
   Shield,
+  AlertTriangle,
+  PackagePlus,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -70,7 +73,7 @@ export default function SettingsPage() {
     industry: "Information Technology & Services",
     registrationNumber: "N/A",
     taxId: "N/A",
-    email: " hr@dmibpo.com",
+    email: "hr@dmibpo.com",
     phone: "N/A",
     website: "https://www.digitalmindsbpo.com",
     address: "3rd Floor, Greenwood Magsaysay Building, Magsaysay Avenue, Naga City, Philippines",
@@ -225,7 +228,7 @@ export default function SettingsPage() {
             industry: companyInfo.industry,
             registration_number: companyInfo.registrationNumber,
             tax_id: companyInfo.taxId,
-            email: companyInfo.email,
+            email: companyInfo.email.trim(),
             phone: companyInfo.phone,
             website: companyInfo.website,
             address: companyInfo.address,
@@ -685,19 +688,22 @@ export default function SettingsPage() {
 
               <div className="space-y-3 p-5 sm:p-6">
                 {[
-                  { key: "lowStock", label: "Low Stock Alerts", desc: "Get notified when items fall below the minimum quantity threshold.", icon: "📊" },
-                  { key: "outOfStock", label: "Out of Stock Alerts", desc: "Receive immediate alerts when inventory reaches zero quantity.", icon: "🚨" },
-                  { key: "newItem", label: "New Item Added", desc: "Get updates whenever a new inventory item is added to the system.", icon: "✨" },
-                  { key: "weeklyReport", label: "Weekly Reports", desc: "Receive a summary report every week for monitoring and review.", icon: "📈" },
-                  { key: "emailAlerts", label: "Email Notifications", desc: "Send all selected alerts and updates to your registered email address.", icon: "📧" },
+                  { key: "lowStock", label: "Low Stock Alerts", desc: "Get notified when items fall below the minimum quantity threshold.", icon: AlertTriangle },
+                  { key: "outOfStock", label: "Out of Stock Alerts", desc: "Receive immediate alerts when inventory reaches zero quantity.", icon: Bell },
+                  { key: "newItem", label: "New Item Added", desc: "Get updates whenever a new inventory item is added to the system.", icon: PackagePlus },
+                  { key: "weeklyReport", label: "Weekly Reports", desc: "Receive a summary report every week for monitoring and review.", icon: FileText },
+                  { key: "emailAlerts", label: "Email Notifications", desc: "Send all selected alerts and updates to your registered email address.", icon: Mail },
                 ].map((item) => {
                   const checked = notifications[item.key as keyof typeof notifications];
+                  const Icon = item.icon;
 
                   return (
                     <div key={item.key} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4 transition-all duration-200 hover:border-slate-200 hover:bg-white hover:shadow-sm">
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                         <div className="flex min-w-0 items-start gap-4">
-                          <div className="shrink-0 text-2xl leading-none">{item.icon}</div>
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm">
+                            <Icon className="h-5 w-5" />
+                          </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-slate-800">{item.label}</p>
                             <p className="mt-1 text-xs leading-5 text-slate-500">{item.desc}</p>
