@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
               </RoleRoute>
             ),
           },
-          {
+          { 
             path: "add-assignment",
             element: (
               <RoleRoute
